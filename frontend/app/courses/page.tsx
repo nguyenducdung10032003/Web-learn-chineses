@@ -110,37 +110,6 @@ export default function CoursesPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
-      {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="container mx-auto px-4 py-4 flex items-center justify-between">
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <span className="text-primary-foreground font-bold text-lg">中</span>
-            </div>
-            <span className="font-space-grotesk font-bold text-xl">ChineseMaster</span>
-          </div>
-          <nav className="hidden md:flex items-center space-x-6">
-            <Link href="/dashboard" className="text-muted-foreground hover:text-foreground transition-colors">
-              Dashboard
-            </Link>
-            <Link href="/courses" className="text-primary font-medium">
-              Khóa học
-            </Link>
-            <Link href="/flashcards" className="text-muted-foreground hover:text-foreground transition-colors">
-              Flashcard
-            </Link>
-            <Link href="/community" className="text-muted-foreground hover:text-foreground transition-colors">
-              Cộng đồng
-            </Link>
-          </nav>
-          <div className="flex items-center space-x-3">
-            <Avatar>
-              <AvatarImage src="/diverse-user-avatars.png" alt="User" />
-              <AvatarFallback>A</AvatarFallback>
-            </Avatar>
-          </div>
-        </div>
-      </header>
 
       <div className="container mx-auto px-4 py-8">
         {/* Page Header */}
