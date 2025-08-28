@@ -2,8 +2,8 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { Course } from './courses/entities/course.entity'
 import { CoursesModule } from './courses/courses.module';
+import { GamesModule } from './games/games.module';
 
 @Module({
   imports: [
@@ -18,6 +18,7 @@ import { CoursesModule } from './courses/courses.module';
       synchronize: false, // true = tự tạo bảng, false = dùng bảng có sẵn
     }),
     CoursesModule,
+    GamesModule,
   ],
   controllers: [AppController],
   providers: [AppService],

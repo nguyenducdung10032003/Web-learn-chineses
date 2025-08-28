@@ -7,6 +7,45 @@ import { Badge } from "@/components/ui/badge"
 import { Progress } from "@/components/ui/progress"
 import { Input } from "@/components/ui/input"
 import { Clock, Zap, Target, Users, Trophy, Star, Play, Shuffle, Edit, Link } from "lucide-react"
+type MCQ = {
+  type: "multiple-choice";
+  question: string;
+  options: string[];
+  correct: number;
+};
+
+type FillBlank = {
+  type: "fill-blank";
+  question: string;
+  sentence: string;
+  blank: string;
+  options: string[];
+};
+
+type Matching = {
+  type: "matching";
+  question: string;
+  chinese: string[];
+  vietnamese: string[];
+  correctPairs: [number, number][]; // cặp [indexChinese, indexVietnamese]
+};
+
+type WordOrder = {
+  type: "word-order";
+  question: string;
+  words: string[];
+  correctOrder: string[];
+};
+
+type GrammarFix = {
+  type: "grammar-fix";
+  question: string;
+  incorrectSentence: string;
+  correctSentence: string;
+  explanation: string;
+};
+
+type Question = MCQ | FillBlank | Matching | WordOrder | GrammarFix;
 
 const games = [
   {
@@ -71,7 +110,7 @@ const games = [
   },
 ]
 
-const gameQuestions = {
+const gameQuestions: Record<number, Question[]> = {
   1: [
     // Multiple choice
     {

@@ -114,6 +114,7 @@ const shopItems = {
       image: "/xp-boost.png",
       owned: false,
       category: "premium",
+      features: ["Không quảng cáo"],
     },
   ],
 }

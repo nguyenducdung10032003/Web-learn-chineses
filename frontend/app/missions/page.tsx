@@ -1,14 +1,39 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { CheckCircle, Clock, Star, Target, BookOpen, Zap, Calendar, Gift } from "lucide-react"
+import { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import {
+  CheckCircle,
+  Clock,
+  Star,
+  Target,
+  BookOpen,
+  Zap,
+  Calendar,
+  Gift,
+} from "lucide-react";
+type Mission = {
+  id: number;
+  title: string;
+  description: string;
+  progress: number;
+  maxProgress: number;
+  xpReward: number;
+  completed: boolean;
+  icon: React.FC<any>;
+  timeLeft: string;
+  special?: boolean;
+};
 
-const missions = {
+const missions: {
+  daily: Mission[];
+  weekly: Mission[];
+  special: Mission[];
+} = {
   daily: [
     {
       id: 1,
@@ -105,32 +130,36 @@ const missions = {
       special: true,
     },
   ],
-}
+};
 
 export default function MissionsPage() {
-  const [activeTab, setActiveTab] = useState("daily")
+  const [activeTab, setActiveTab] = useState("daily");
 
-  const currentMissions = missions[activeTab as keyof typeof missions]
+  const currentMissions = missions[activeTab as keyof typeof missions];
 
   const claimReward = (missionId: number) => {
-    console.log(`Claiming reward for mission ${missionId}`)
+    console.log(`Claiming reward for mission ${missionId}`);
     // Handle reward claiming logic here
-  }
+  };
 
   const getTotalProgress = (missions: any[]) => {
-    const completed = missions.filter((m) => m.completed).length
-    return Math.round((completed / missions.length) * 100)
-  }
+    const completed = missions.filter((m) => m.completed).length;
+    return Math.round((completed / missions.length) * 100);
+  };
 
   const getTotalXP = (missions: any[]) => {
-    return missions.filter((m) => m.completed).reduce((sum, m) => sum + m.xpReward, 0)
-  }
+    return missions
+      .filter((m) => m.completed)
+      .reduce((sum, m) => sum + m.xpReward, 0);
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Nhiệm vụ</h1>
-        <p className="text-gray-600">Hoàn thành nhiệm vụ để nhận XP và phần thưởng</p>
+        <p className="text-gray-600">
+          Hoàn thành nhiệm vụ để nhận XP và phần thưởng
+        </p>
       </div>
 
       {/* Progress Overview */}
@@ -142,7 +171,9 @@ export default function MissionsPage() {
                 <Clock className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{getTotalProgress(missions.daily)}%</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {getTotalProgress(missions.daily)}%
+                </p>
                 <p className="text-sm text-gray-600">Nhiệm vụ hàng ngày</p>
               </div>
             </div>
@@ -156,7 +187,9 @@ export default function MissionsPage() {
                 <Calendar className="h-6 w-6 text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold text-gray-900">{getTotalProgress(missions.weekly)}%</p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {getTotalProgress(missions.weekly)}%
+                </p>
                 <p className="text-sm text-gray-600">Nhiệm vụ hàng tuần</p>
               </div>
             </div>
@@ -200,31 +233,62 @@ export default function MissionsPage() {
         <TabsContent value={activeTab} className="mt-6">
           <div className="space-y-4">
             {currentMissions.map((mission) => {
-              const Icon = mission.icon
-              const progressPercentage = (mission.progress / mission.maxProgress) * 100
+              const Icon = mission.icon;
+              const progressPercentage =
+                (mission.progress / mission.maxProgress) * 100;
 
               return (
                 <Card
                   key={mission.id}
-                  className={`${mission.completed ? "ring-2 ring-emerald-500 bg-emerald-50" : ""} ${mission.special ? "ring-2 ring-purple-500 bg-gradient-to-r from-purple-50 to-pink-50" : ""}`}
+                  className={`${
+                    mission.completed
+                      ? "ring-2 ring-emerald-500 bg-emerald-50"
+                      : ""
+                  } ${
+                    mission.special
+                      ? "ring-2 ring-purple-500 bg-gradient-to-r from-purple-50 to-pink-50"
+                      : ""
+                  }`}
                 >
                   <CardContent className="p-6">
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-4 flex-1">
                         <div
-                          className={`p-3 rounded-lg ${mission.completed ? "bg-emerald-100" : mission.special ? "bg-purple-100" : "bg-gray-100"}`}
+                          className={`p-3 rounded-lg ${
+                            mission.completed
+                              ? "bg-emerald-100"
+                              : mission.special
+                              ? "bg-purple-100"
+                              : "bg-gray-100"
+                          }`}
                         >
                           <Icon
-                            className={`h-6 w-6 ${mission.completed ? "text-emerald-600" : mission.special ? "text-purple-600" : "text-gray-600"}`}
+                            className={`h-6 w-6 ${
+                              mission.completed
+                                ? "text-emerald-600"
+                                : mission.special
+                                ? "text-purple-600"
+                                : "text-gray-600"
+                            }`}
                           />
                         </div>
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <h3 className="font-semibold text-gray-900">{mission.title}</h3>
-                            {mission.completed && <CheckCircle className="h-5 w-5 text-emerald-500" />}
-                            {mission.special && <Badge className="bg-purple-500 hover:bg-purple-600">Đặc biệt</Badge>}
+                            <h3 className="font-semibold text-gray-900">
+                              {mission.title}
+                            </h3>
+                            {mission.completed && (
+                              <CheckCircle className="h-5 w-5 text-emerald-500" />
+                            )}
+                            {mission.special && (
+                              <Badge className="bg-purple-500 hover:bg-purple-600">
+                                Đặc biệt
+                              </Badge>
+                            )}
                           </div>
-                          <p className="text-gray-600 mb-4">{mission.description}</p>
+                          <p className="text-gray-600 mb-4">
+                            {mission.description}
+                          </p>
 
                           <div className="space-y-2">
                             <div className="flex justify-between text-sm">
@@ -233,27 +297,40 @@ export default function MissionsPage() {
                                 {mission.progress}/{mission.maxProgress}
                               </span>
                             </div>
-                            <Progress value={progressPercentage} className="h-2" />
+                            <Progress
+                              value={progressPercentage}
+                              className="h-2"
+                            />
                           </div>
 
                           <div className="flex items-center justify-between mt-4">
                             <div className="flex items-center gap-4">
                               <div className="flex items-center gap-1">
                                 <Star className="h-4 w-4 text-yellow-500" />
-                                <span className="font-medium">+{mission.xpReward} XP</span>
+                                <span className="font-medium">
+                                  +{mission.xpReward} XP
+                                </span>
                               </div>
                               <div className="flex items-center gap-1">
                                 <Clock className="h-4 w-4 text-gray-400" />
-                                <span className="text-sm text-gray-600">{mission.timeLeft}</span>
+                                <span className="text-sm text-gray-600">
+                                  {mission.timeLeft}
+                                </span>
                               </div>
                             </div>
 
                             <Button
                               onClick={() => claimReward(mission.id)}
                               disabled={!mission.completed}
-                              className={mission.completed ? "bg-emerald-500 hover:bg-emerald-600" : ""}
+                              className={
+                                mission.completed
+                                  ? "bg-emerald-500 hover:bg-emerald-600"
+                                  : ""
+                              }
                             >
-                              {mission.completed ? "Nhận thưởng" : `${Math.round(progressPercentage)}%`}
+                              {mission.completed
+                                ? "Nhận thưởng"
+                                : `${Math.round(progressPercentage)}%`}
                             </Button>
                           </div>
                         </div>
@@ -261,7 +338,7 @@ export default function MissionsPage() {
                     </div>
                   </CardContent>
                 </Card>
-              )
+              );
             })}
           </div>
         </TabsContent>
@@ -297,5 +374,5 @@ export default function MissionsPage() {
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }
