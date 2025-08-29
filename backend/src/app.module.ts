@@ -4,6 +4,9 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { CoursesModule } from './courses/courses.module';
 import { GamesModule } from './games/games.module';
+import { DecksModule } from './decks/decks.module';
+import { AuthModule } from './auth/auth.module';
+import { UsersModule } from './users/users.module';
 
 @Module({
   imports: [
@@ -19,6 +22,9 @@ import { GamesModule } from './games/games.module';
     }),
     CoursesModule,
     GamesModule,
+    DecksModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],

@@ -14,7 +14,6 @@ export class GamesService {
 
     @InjectRepository(Question)
     private readonly questionsRepository: Repository<Question>,
-    
   ) {}
 
   create(createGameDto: CreateGameDto) {
@@ -24,7 +23,12 @@ export class GamesService {
 
   findAll() {
     return this.gamesRepository.find({
-      relations: ['questions', 'questions.options', 'questions.matching_pairs', 'questions.word_order']
+      relations: [
+        'questions',
+        'questions.options',
+        'questions.matching_pairs',
+        'questions.word_order',
+      ],
     });
   }
 
