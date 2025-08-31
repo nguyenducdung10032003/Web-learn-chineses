@@ -3,10 +3,12 @@ import {
   PrimaryGeneratedColumn,
   Column,
   CreateDateColumn,
-  UpdateDateColumn, 
-  OneToMany
+  UpdateDateColumn,
+  OneToMany,
 } from 'typeorm';
-import { Deck } from '../../decks/entities/deck.entity'
+import { Deck } from '../../decks/entities/deck.entity';
+import { StudyStats } from 'src/decks/entities/studyStats.entity';
+import { StudyActivity } from 'src/decks/entities/studyActivity.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -75,4 +77,10 @@ export class User {
 
   @OneToMany(() => Deck, (deck) => deck.user)
   decks: Deck[];
+
+  @OneToMany(() => StudyStats, (study) => study.user)
+  studyStats: StudyStats[];
+
+  @OneToMany(() => StudyActivity, (study) => study.user)
+  studyActivities: StudyActivity[];
 }

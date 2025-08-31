@@ -9,6 +9,7 @@ import {
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 import { Flashcard } from './flashcard.entity';
+import { StudyActivity } from './studyActivity.entity';
 
 @Entity('decks')
 export class Deck {
@@ -66,4 +67,7 @@ export class Deck {
 
   @OneToMany(() => Flashcard, (flashcard) => flashcard.deck)
   flashcards: Flashcard[];
+
+  @OneToMany(() => StudyActivity, (study) => study.deck)
+  studyActivities: StudyActivity[];
 }

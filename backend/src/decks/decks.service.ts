@@ -19,7 +19,7 @@ export class DecksService {
 
   findAll() {
     return this.deckRepository.find({
-      relations: ['flashcards']
+      relations: ['flashcards','studyActivities']
     });
   }
 

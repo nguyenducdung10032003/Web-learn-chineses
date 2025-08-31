@@ -7,6 +7,8 @@ import { GamesModule } from './games/games.module';
 import { DecksModule } from './decks/decks.module';
 import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
+import { join } from 'path';
+import { ServeStaticModule } from '@nestjs/serve-static';
 
 @Module({
   imports: [
@@ -19,6 +21,10 @@ import { UsersModule } from './users/users.module';
       database: 'learn_chinese', // DB bạn tạo trong DBeaver
       autoLoadEntities: true,
       synchronize: false, // true = tự tạo bảng, false = dùng bảng có sẵn
+    }),
+    ServeStaticModule.forRoot({
+      rootPath: join(__dirname, '..', 'uploads'), // thư mục chứa ảnh
+      serveRoot: '/uploads', // prefix public
     }),
     CoursesModule,
     GamesModule,
