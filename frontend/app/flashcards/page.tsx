@@ -1,97 +1,133 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
-import { Input } from "@/components/ui/input"
-import { BookOpen, Play, Plus, Search, Clock, Star, Zap, TrendingUp, Calendar, Target, BarChart3 } from "lucide-react"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import {
+  BookOpen,
+  Play,
+  Plus,
+  Search,
+  Clock,
+  Star,
+  Zap,
+  TrendingUp,
+  Calendar,
+  Target,
+  BarChart3,
+} from "lucide-react";
+import { BASE_URL } from "@/constants";
+import { format } from "date-fns";
 
 export default function FlashcardsPage() {
-  const [searchQuery, setSearchQuery] = useState("")
+  const [searchQuery, setSearchQuery] = useState("");
+  const [flashcardDecks, setFlashcardDecks] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+  // const flashcardDecks = [
+  //   {
+  //     id: 1,
+  //     title: "HSK 1 - Từ vựng cơ bản",
+  //     description: "150 từ vựng thiết yếu cho người mới bắt đầu",
+  //     totalCards: 150,
+  //     studiedCards: 89,
+  //     masteredCards: 45,
+  //     level: "Sơ cấp",
+  //     category: "HSK",
+  //     lastStudied: "2 giờ trước",
+  //     streak: 5,
+  //     image: "/hsk1-vocabulary.png",
+  //     color: "bg-green-500",
+  //     isPersonal: false,
+  //   },
+  //   {
+  //     id: 2,
+  //     title: "HSK 2 - Từ vựng nâng cao",
+  //     description: "300 từ vựng cho trình độ sơ trung cấp",
+  //     totalCards: 300,
+  //     studiedCards: 120,
+  //     masteredCards: 67,
+  //     level: "Trung cấp",
+  //     category: "HSK",
+  //     lastStudied: "1 ngày trước",
+  //     streak: 3,
+  //     image: "/hsk2-vocabulary.png",
+  //     color: "bg-blue-500",
+  //     isPersonal: false,
+  //   },
+  //   {
+  //     id: 3,
+  //     title: "Từ vựng hàng ngày",
+  //     description: "Các từ thường dùng trong cuộc sống",
+  //     totalCards: 200,
+  //     studiedCards: 156,
+  //     masteredCards: 98,
+  //     level: "Sơ cấp",
+  //     category: "Thường dùng",
+  //     lastStudied: "3 giờ trước",
+  //     streak: 12,
+  //     image: "/daily-vocabulary.png",
+  //     color: "bg-orange-500",
+  //     isPersonal: false,
+  //   },
+  //   {
+  //     id: 4,
+  //     title: "Bộ từ vựng của tôi",
+  //     description: "Từ vựng cá nhân hóa do bạn tạo",
+  //     totalCards: 45,
+  //     studiedCards: 32,
+  //     masteredCards: 18,
+  //     level: "Tùy chỉnh",
+  //     category: "Cá nhân",
+  //     lastStudied: "5 giờ trước",
+  //     streak: 2,
+  //     image: "/personal-deck.png",
+  //     color: "bg-purple-500",
+  //     isPersonal: true,
+  //   },
+  // ]
 
-  const flashcardDecks = [
-    {
-      id: 1,
-      title: "HSK 1 - Từ vựng cơ bản",
-      description: "150 từ vựng thiết yếu cho người mới bắt đầu",
-      totalCards: 150,
-      studiedCards: 89,
-      masteredCards: 45,
-      level: "Sơ cấp",
-      category: "HSK",
-      lastStudied: "2 giờ trước",
-      streak: 5,
-      image: "/hsk1-vocabulary.png",
-      color: "bg-green-500",
-      isPersonal: false,
-    },
-    {
-      id: 2,
-      title: "HSK 2 - Từ vựng nâng cao",
-      description: "300 từ vựng cho trình độ sơ trung cấp",
-      totalCards: 300,
-      studiedCards: 120,
-      masteredCards: 67,
-      level: "Trung cấp",
-      category: "HSK",
-      lastStudied: "1 ngày trước",
-      streak: 3,
-      image: "/hsk2-vocabulary.png",
-      color: "bg-blue-500",
-      isPersonal: false,
-    },
-    {
-      id: 3,
-      title: "Từ vựng hàng ngày",
-      description: "Các từ thường dùng trong cuộc sống",
-      totalCards: 200,
-      studiedCards: 156,
-      masteredCards: 98,
-      level: "Sơ cấp",
-      category: "Thường dùng",
-      lastStudied: "3 giờ trước",
-      streak: 12,
-      image: "/daily-vocabulary.png",
-      color: "bg-orange-500",
-      isPersonal: false,
-    },
-    {
-      id: 4,
-      title: "Bộ từ vựng của tôi",
-      description: "Từ vựng cá nhân hóa do bạn tạo",
-      totalCards: 45,
-      studiedCards: 32,
-      masteredCards: 18,
-      level: "Tùy chỉnh",
-      category: "Cá nhân",
-      lastStudied: "5 giờ trước",
-      streak: 2,
-      image: "/personal-deck.png",
-      color: "bg-purple-500",
-      isPersonal: true,
-    },
-  ]
+  // const studyStats = {
+  //   totalCards: 695,
+  //   studiedToday: 25,
+  //   streak: 12,
+  //   accuracy: 78,
+  //   timeSpent: 45, // minutes
+  // }
 
-  const studyStats = {
-    totalCards: 695,
-    studiedToday: 25,
-    streak: 12,
-    accuracy: 78,
-    timeSpent: 45, // minutes
-  }
-
-  const recentActivity = [
-    { deck: "HSK 1 - Từ vựng cơ bản", cards: 20, accuracy: 85, xp: 50, time: "2 giờ trước" },
-    { deck: "Từ vựng hàng ngày", cards: 15, accuracy: 92, xp: 40, time: "1 ngày trước" },
-    { deck: "HSK 2 - Từ vựng nâng cao", cards: 25, accuracy: 72, xp: 60, time: "2 ngày trước" },
-  ]
-
-  const filteredDecks = flashcardDecks.filter((deck) => deck.title.toLowerCase().includes(searchQuery.toLowerCase()))
+  // const recentActivity = [
+  //   { deck: "HSK 1 - Từ vựng cơ bản", cards: 20, accuracy: 85, xp: 50, time: "2 giờ trước" },
+  //   { deck: "Từ vựng hàng ngày", cards: 15, accuracy: 92, xp: 40, time: "1 ngày trước" },
+  //   { deck: "HSK 2 - Từ vựng nâng cao", cards: 25, accuracy: 72, xp: 60, time: "2 ngày trước" },
+  // ]
+  useEffect(() => {
+    const fetchDecks = async () => {
+      try {
+        const res = await fetch(`${BASE_URL}/decks`); // gọi API backend
+        const data = await res.json();
+        setFlashcardDecks(data); // backend trả về mảng decks
+      } catch (error) {
+        console.error("Lỗi fetch decks:", error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchDecks();
+  }, []);
+  const filteredDecks = flashcardDecks.filter((deck) =>
+    deck.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
@@ -99,8 +135,12 @@ export default function FlashcardsPage() {
         {/* Page Header */}
         <div className="flex items-center justify-between mb-8">
           <div>
-            <h1 className="font-space-grotesk font-bold text-3xl mb-2">Flashcards</h1>
-            <p className="text-muted-foreground">Học từ vựng hiệu quả với hệ thống lặp lại ngắt quãng</p>
+            <h1 className="font-space-grotesk font-bold text-3xl mb-2">
+              Flashcards
+            </h1>
+            <p className="text-muted-foreground">
+              Học từ vựng hiệu quả với hệ thống lặp lại ngắt quãng
+            </p>
           </div>
           <Link href="/flashcards/create">
             <Button>
@@ -118,7 +158,7 @@ export default function FlashcardsPage() {
               <BookOpen className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{studyStats.totalCards}</div>
+              {/* <div className="text-2xl font-bold">{studyStats.totalCards}</div> */}
             </CardContent>
           </Card>
 
@@ -128,7 +168,9 @@ export default function FlashcardsPage() {
               <Target className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{studyStats.studiedToday}</div>
+              <div className="text-2xl font-bold">
+                {/* {studyStats.studiedToday} */}
+              </div>
             </CardContent>
           </Card>
 
@@ -138,27 +180,31 @@ export default function FlashcardsPage() {
               <Calendar className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{studyStats.streak}</div>
+              {/* <div className="text-2xl font-bold">{studyStats.streak}</div> */}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Độ chính xác</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Độ chính xác
+              </CardTitle>
               <TrendingUp className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{studyStats.accuracy}%</div>
+              {/* <div className="text-2xl font-bold">{studyStats.accuracy}%</div> */}
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Thời gian học</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Thời gian học
+              </CardTitle>
               <Clock className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{studyStats.timeSpent}p</div>
+              {/* <div className="text-2xl font-bold">{studyStats.timeSpent}p</div> */}
             </CardContent>
           </Card>
         </div>
@@ -185,9 +231,16 @@ export default function FlashcardsPage() {
             {/* Flashcard Decks */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {filteredDecks.map((deck) => (
-                <Card key={deck.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+                <Card
+                  key={deck.id}
+                  className="overflow-hidden hover:shadow-lg transition-shadow"
+                >
                   <div className="relative">
-                    <img src={deck.image || "/placeholder.svg"} alt={deck.title} className="w-full h-32 object-cover" />
+                    <img
+                      src={`${BASE_URL}${deck.image}`}
+                      alt={deck.title}
+                      className="w-full h-32 object-cover"
+                    />
                     <div className="absolute top-3 left-3">
                       <Badge className={deck.color}>{deck.level}</Badge>
                     </div>
@@ -205,9 +258,16 @@ export default function FlashcardsPage() {
                     <div className="space-y-4">
                       <div className="flex items-center justify-between text-sm">
                         <span>Tiến độ học</span>
-                        <span>{Math.round((deck.studiedCards / deck.totalCards) * 100)}%</span>
+                        <span>
+                          {Math.round(
+                            (deck.studiedCards / deck.totalCards) * 100
+                          )}
+                          %
+                        </span>
                       </div>
-                      <Progress value={(deck.studiedCards / deck.totalCards) * 100} />
+                      <Progress
+                        value={(deck.studiedCards / deck.totalCards) * 100}
+                      />
 
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
                         <span>
@@ -217,7 +277,13 @@ export default function FlashcardsPage() {
                       </div>
 
                       <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>Học lần cuối: {deck.lastStudied}</span>
+                        <span>
+                          Học lần cuối:{" "}
+                          {format(
+                            new Date(deck.lastStudied),
+                            "dd/MM/yyyy HH:mm"
+                          )}
+                        </span>
                         <div className="flex items-center gap-1">
                           <Calendar className="h-3 w-3" />
                           <span>{deck.streak} ngày</span>
@@ -225,7 +291,10 @@ export default function FlashcardsPage() {
                       </div>
 
                       <div className="flex gap-2">
-                        <Link href={`/flashcards/${deck.id}/study`} className="flex-1">
+                        <Link
+                          href={`/flashcards/${deck.id}/study`}
+                          className="flex-1"
+                        >
                           <Button className="w-full">
                             <Play className="h-4 w-4 mr-2" />
                             Học ngay
@@ -251,7 +320,9 @@ export default function FlashcardsPage() {
                   <Zap className="h-5 w-5 text-primary" />
                   Học nhanh 5 phút
                 </CardTitle>
-                <CardDescription>Luyện tập nhanh với 10-20 thẻ ngẫu nhiên</CardDescription>
+                <CardDescription>
+                  Luyện tập nhanh với 10-20 thẻ ngẫu nhiên
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid md:grid-cols-2 gap-4">
@@ -262,7 +333,9 @@ export default function FlashcardsPage() {
                       </div>
                       <div>
                         <h3 className="font-medium">Ôn tập cần thiết</h3>
-                        <p className="text-sm text-muted-foreground">15 thẻ cần ôn lại</p>
+                        <p className="text-sm text-muted-foreground">
+                          15 thẻ cần ôn lại
+                        </p>
                       </div>
                     </div>
                   </Card>
@@ -274,7 +347,9 @@ export default function FlashcardsPage() {
                       </div>
                       <div>
                         <h3 className="font-medium">Thẻ mới</h3>
-                        <p className="text-sm text-muted-foreground">20 thẻ chưa học</p>
+                        <p className="text-sm text-muted-foreground">
+                          20 thẻ chưa học
+                        </p>
                       </div>
                     </div>
                   </Card>
@@ -286,7 +361,9 @@ export default function FlashcardsPage() {
                       </div>
                       <div>
                         <h3 className="font-medium">Thẻ khó</h3>
-                        <p className="text-sm text-muted-foreground">8 thẻ cần luyện thêm</p>
+                        <p className="text-sm text-muted-foreground">
+                          8 thẻ cần luyện thêm
+                        </p>
                       </div>
                     </div>
                   </Card>
@@ -298,7 +375,9 @@ export default function FlashcardsPage() {
                       </div>
                       <div>
                         <h3 className="font-medium">Ngẫu nhiên</h3>
-                        <p className="text-sm text-muted-foreground">Trộn tất cả bộ thẻ</p>
+                        <p className="text-sm text-muted-foreground">
+                          Trộn tất cả bộ thẻ
+                        </p>
                       </div>
                     </div>
                   </Card>
@@ -316,21 +395,25 @@ export default function FlashcardsPage() {
                     Hoạt động gần đây
                   </CardTitle>
                 </CardHeader>
-                <CardContent>
+                {/* <CardContent>
                   <div className="space-y-4">
                     {recentActivity.map((activity, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 border rounded-lg">
+                      <div
+                        key={index}
+                        className="flex items-center justify-between p-3 border rounded-lg"
+                      >
                         <div>
                           <p className="font-medium">{activity.deck}</p>
                           <p className="text-sm text-muted-foreground">
-                            {activity.cards} thẻ • {activity.accuracy}% chính xác • {activity.time}
+                            {activity.cards} thẻ • {activity.accuracy}% chính
+                            xác • {activity.time}
                           </p>
                         </div>
                         <Badge variant="secondary">+{activity.xp} XP</Badge>
                       </div>
                     ))}
                   </div>
-                </CardContent>
+                </CardContent> */}
               </Card>
 
               <Card>
@@ -368,5 +451,5 @@ export default function FlashcardsPage() {
         </Tabs>
       </div>
     </div>
-  )
+  );
 }

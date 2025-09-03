@@ -39,10 +39,10 @@ import {
 } from "lucide-react"
 
 const coreItems = [
+  { href: "/games", label: "Mini Games", icon: Gamepad2 },
   { href: "/dashboard", label: "Dashboard", icon: Home },
   { href: "/courses", label: "Khóa học", icon: BookOpen },
-  { href: "/flashcards", label: "Flashcard", icon: CreditCard },
-  { href: "/games", label: "Mini Games", icon: Gamepad2 },
+  { href: "/flashcards", label: "Flashcard", icon: CreditCard }
 ]
 
 const achievementItems = [
@@ -154,15 +154,15 @@ export function Navigation() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" sideOffset={8} className="w-56 p-1">
                 <DropdownMenuItem asChild>
-                  <Link href="/profile" className="flex items-center w-full">
+                  <Link href="/dashboard" className="flex items-center w-full">
                     <User className="h-4 w-4 mr-2" /> Hồ sơ cá nhân
                   </Link>
                 </DropdownMenuItem>
-                <DropdownMenuItem asChild>
+                {/* <DropdownMenuItem asChild>
                   <Link href="/settings" className="flex items-center w-full">
                     <Settings className="h-4 w-4 mr-2" /> Cài đặt
                   </Link>
-                </DropdownMenuItem>
+                </DropdownMenuItem> */}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem asChild>
                   <Link href="/logout" className="flex items-center w-full">
