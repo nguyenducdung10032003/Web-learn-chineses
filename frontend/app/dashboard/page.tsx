@@ -1,12 +1,18 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Badge } from "@/components/ui/badge"
-import { Progress } from "@/components/ui/progress"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   BookOpen,
   Trophy,
@@ -20,55 +26,73 @@ import {
   Clock,
   CheckCircle,
   MessageCircle,
-} from "lucide-react"
+} from "lucide-react";
 
 export default function DashboardPage() {
-  const [user] = useState({
-    name: "Nguyễn Văn A",
-    email: "nguyenvana@email.com",
-    avatar: "/diverse-user-avatars.png",
-    level: 12,
-    xp: 2450,
-    xpToNextLevel: 3000,
-    streak: 15,
-    totalLessons: 45,
-    completedLessons: 32,
-    badges: [
-      { id: 1, name: "Người mới bắt đầu", icon: "🌟", earned: true },
-      { id: 2, name: "Học liên tục 7 ngày", icon: "🔥", earned: true },
-      { id: 3, name: "Hoàn thành 100 câu hỏi", icon: "💯", earned: true },
-      { id: 4, name: "Bậc thầy ngữ pháp", icon: "📚", earned: false },
-    ],
-    recentActivity: [
-      { id: 1, type: "lesson", title: "Ngữ pháp cơ bản - Bài 5", xp: 50, time: "2 giờ trước" },
-      { id: 2, type: "flashcard", title: "Từ vựng HSK 1", xp: 25, time: "1 ngày trước" },
-      { id: 3, type: "quiz", title: "Kiểm tra chương 2", xp: 100, time: "2 ngày trước" },
-    ],
-  })
+  // const [user] = useState({
+  //   name: "Nguyễn Văn A",
+  //   email: "nguyenvana@email.com",
+  //   avatar: "/diverse-user-avatars.png",
+  //   level: 12,
+  //   xp: 2450,
+  //   xpToNextLevel: 3000,
+  //   streak: 15,
+  //   totalLessons: 45,
+  //   completedLessons: 32,
+  //   badges: [
+  //     { id: 1, name: "Người mới bắt đầu", icon: "🌟", earned: true },
+  //     { id: 2, name: "Học liên tục 7 ngày", icon: "🔥", earned: true },
+  //     { id: 3, name: "Hoàn thành 100 câu hỏi", icon: "💯", earned: true },
+  //     { id: 4, name: "Bậc thầy ngữ pháp", icon: "📚", earned: false },
+  //   ],
+  //   recentActivity: [
+  //     { id: 1, type: "lesson", title: "Ngữ pháp cơ bản - Bài 5", xp: 50, time: "2 giờ trước" },
+  //     { id: 2, type: "flashcard", title: "Từ vựng HSK 1", xp: 25, time: "1 ngày trước" },
+  //     { id: 3, type: "quiz", title: "Kiểm tra chương 2", xp: 100, time: "2 ngày trước" },
+  //   ],
+  // })
 
-  const [dailyMissions] = useState([
-    { id: 1, title: "Hoàn thành 1 bài học", progress: 1, target: 1, xp: 50, completed: true },
-    { id: 2, title: "Làm 20 flashcards", progress: 15, target: 20, xp: 30, completed: false },
-    { id: 3, title: "Tham gia thảo luận", progress: 0, target: 1, xp: 25, completed: false },
-  ])
+  // const [dailyMissions] = useState([
+  //   { id: 1, title: "Hoàn thành 1 bài học", progress: 1, target: 1, xp: 50, completed: true },
+  //   { id: 2, title: "Làm 20 flashcards", progress: 15, target: 20, xp: 30, completed: false },
+  //   { id: 3, title: "Tham gia thảo luận", progress: 0, target: 1, xp: 25, completed: false },
+  // ])
+  const [user, setUser] = useState<any>(null);
 
-  const progressPercentage = (user.xp / user.xpToNextLevel) * 100
-  const lessonProgress = (user.completedLessons / user.totalLessons) * 100
+  useEffect(() => {
+    const savedUser = localStorage.getItem("user");
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+  }, []);
 
+  if (!user) {
+    return <div className="p-8">Đang tải dữ liệu...</div>;
+  }
+
+  const progressPercentage = (user.xp / user.xpToNextLevel) * 100;
+  const lessonProgress = (user.completedLessons / user.totalLessons) * 100;
+  const dailyMissions = user?.dailyMissions ?? [];
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
       <div className="container mx-auto px-4 py-8">
         {/* Welcome Section */}
         <div className="mb-8">
-          <h1 className="font-space-grotesk font-bold text-3xl mb-2">Chào mừng trở lại, {user.name}!</h1>
-          <p className="text-muted-foreground">Hãy tiếp tục hành trình học tiếng Trung của bạn</p>
+          <h1 className="font-space-grotesk font-bold text-3xl mb-2">
+            Chào mừng trở lại, {user.name}!
+          </h1>
+          <p className="text-muted-foreground">
+            Hãy tiếp tục hành trình học tiếng Trung của bạn
+          </p>
         </div>
 
         {/* Stats Overview */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Cấp độ hiện tại</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Cấp độ hiện tại
+              </CardTitle>
               <Trophy className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
@@ -84,18 +108,24 @@ export default function DashboardPage() {
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Chuỗi ngày học</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Chuỗi ngày học
+              </CardTitle>
               <Flame className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">{user.streak} ngày</div>
-              <p className="text-xs text-muted-foreground">Tiếp tục phát huy!</p>
+              <p className="text-xs text-muted-foreground">
+                Tiếp tục phát huy!
+              </p>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Tiến độ khóa học</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Tiến độ khóa học
+              </CardTitle>
               <BookOpen className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
@@ -104,19 +134,27 @@ export default function DashboardPage() {
               </div>
               <div className="mt-2">
                 <Progress value={lessonProgress} className="h-2" />
-                <p className="text-xs text-muted-foreground mt-1">{Math.round(lessonProgress)}% hoàn thành</p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  {Math.round(lessonProgress)}% hoàn thành
+                </p>
               </div>
             </CardContent>
           </Card>
 
           <Card>
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">Huy hiệu đạt được</CardTitle>
+              <CardTitle className="text-sm font-medium">
+                Huy hiệu đạt được
+              </CardTitle>
               <Award className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">{user.badges.filter((b) => b.earned).length}</div>
-              <p className="text-xs text-muted-foreground">/{user.badges.length} huy hiệu</p>
+              <div className="text-2xl font-bold">
+                {user.badges?.filter((b: any) => b.earned).length ?? 0}
+              </div>
+              <p className="text-xs text-muted-foreground">
+                /{user.badges?.length ?? 0} huy hiệu
+              </p>
             </CardContent>
           </Card>
         </div>
@@ -132,18 +170,29 @@ export default function DashboardPage() {
                   <Target className="h-5 w-5 text-primary" />
                   Nhiệm vụ hàng ngày
                 </CardTitle>
-                <CardDescription>Hoàn thành để nhận XP và duy trì chuỗi ngày học</CardDescription>
+                <CardDescription>
+                  Hoàn thành để nhận XP và duy trì chuỗi ngày học
+                </CardDescription>
               </CardHeader>
               <CardContent className="space-y-4">
                 {dailyMissions.map((mission) => (
-                  <div key={mission.id} className="flex items-center justify-between p-3 rounded-lg border">
+                  <div
+                    key={mission.id}
+                    className="flex items-center justify-between p-3 rounded-lg border"
+                  >
                     <div className="flex items-center gap-3">
                       <div
                         className={`w-6 h-6 rounded-full flex items-center justify-center ${
-                          mission.completed ? "bg-primary text-primary-foreground" : "bg-muted"
+                          mission.completed
+                            ? "bg-primary text-primary-foreground"
+                            : "bg-muted"
                         }`}
                       >
-                        {mission.completed ? <CheckCircle className="h-4 w-4" /> : <Clock className="h-4 w-4" />}
+                        {mission.completed ? (
+                          <CheckCircle className="h-4 w-4" />
+                        ) : (
+                          <Clock className="h-4 w-4" />
+                        )}
                       </div>
                       <div>
                         <p className="font-medium">{mission.title}</p>
@@ -152,7 +201,10 @@ export default function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <Progress value={(mission.progress / mission.target) * 100} className="w-20 h-2" />
+                    <Progress
+                      value={(mission.progress / mission.target) * 100}
+                      className="w-20 h-2"
+                    />
                   </div>
                 ))}
               </CardContent>
@@ -162,24 +214,35 @@ export default function DashboardPage() {
             <Card>
               <CardHeader>
                 <CardTitle>Tiếp tục học tập</CardTitle>
-                <CardDescription>Chọn hoạt động bạn muốn thực hiện</CardDescription>
+                <CardDescription>
+                  Chọn hoạt động bạn muốn thực hiện
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <Link href="/courses">
-                    <Button className="w-full h-20 flex flex-col gap-2 bg-transparent" variant="outline">
+                    <Button
+                      className="w-full h-20 flex flex-col gap-2 bg-transparent"
+                      variant="outline"
+                    >
                       <BookOpen className="h-6 w-6" />
                       <span>Học bài mới</span>
                     </Button>
                   </Link>
                   <Link href="/flashcards">
-                    <Button className="w-full h-20 flex flex-col gap-2 bg-transparent" variant="outline">
+                    <Button
+                      className="w-full h-20 flex flex-col gap-2 bg-transparent"
+                      variant="outline"
+                    >
                       <Zap className="h-6 w-6" />
                       <span>Luyện flashcard</span>
                     </Button>
                   </Link>
                   <Link href="/community">
-                    <Button className="w-full h-20 flex flex-col gap-2 bg-transparent" variant="outline">
+                    <Button
+                      className="w-full h-20 flex flex-col gap-2 bg-transparent"
+                      variant="outline"
+                    >
                       <MessageCircle className="h-6 w-6" />
                       <span>Thảo luận</span>
                     </Button>
@@ -199,16 +262,27 @@ export default function DashboardPage() {
               <CardContent>
                 <div className="space-y-3">
                   {user.recentActivity.map((activity) => (
-                    <div key={activity.id} className="flex items-center justify-between p-3 rounded-lg border">
+                    <div
+                      key={activity.id}
+                      className="flex items-center justify-between p-3 rounded-lg border"
+                    >
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-primary/10 rounded-lg flex items-center justify-center">
-                          {activity.type === "lesson" && <BookOpen className="h-5 w-5 text-primary" />}
-                          {activity.type === "flashcard" && <Zap className="h-5 w-5 text-primary" />}
-                          {activity.type === "quiz" && <Trophy className="h-5 w-5 text-primary" />}
+                          {activity.type === "lesson" && (
+                            <BookOpen className="h-5 w-5 text-primary" />
+                          )}
+                          {activity.type === "flashcard" && (
+                            <Zap className="h-5 w-5 text-primary" />
+                          )}
+                          {activity.type === "quiz" && (
+                            <Trophy className="h-5 w-5 text-primary" />
+                          )}
                         </div>
                         <div>
                           <p className="font-medium">{activity.title}</p>
-                          <p className="text-sm text-muted-foreground">{activity.time}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {activity.time}
+                          </p>
                         </div>
                       </div>
                       <Badge variant="secondary">+{activity.xp} XP</Badge>
@@ -225,8 +299,13 @@ export default function DashboardPage() {
             <Card>
               <CardHeader className="text-center">
                 <Avatar className="w-20 h-20 mx-auto mb-4">
-                  <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
-                  <AvatarFallback className="text-2xl">{user.name.charAt(0)}</AvatarFallback>
+                  <AvatarImage
+                    src={user.avatar || "/placeholder.svg"}
+                    alt={user.name}
+                  />
+                  <AvatarFallback className="text-2xl">
+                    {user.name.charAt(0)}
+                  </AvatarFallback>
                 </Avatar>
                 <CardTitle>{user.name}</CardTitle>
                 <CardDescription>{user.email}</CardDescription>
@@ -253,7 +332,9 @@ export default function DashboardPage() {
                     <div
                       key={badge.id}
                       className={`p-3 rounded-lg border text-center ${
-                        badge.earned ? "bg-primary/5 border-primary/20" : "bg-muted/50 opacity-50"
+                        badge.earned
+                          ? "bg-primary/5 border-primary/20"
+                          : "bg-muted/50 opacity-50"
                       }`}
                     >
                       <div className="text-2xl mb-1">{badge.icon}</div>
@@ -277,7 +358,9 @@ export default function DashboardPage() {
                   <div className="text-3xl mb-2">🏆</div>
                   <p className="font-medium mb-2">Hoàn thành 50 flashcards</p>
                   <Progress value={60} className="mb-2" />
-                  <p className="text-sm text-muted-foreground">30/50 hoàn thành</p>
+                  <p className="text-sm text-muted-foreground">
+                    30/50 hoàn thành
+                  </p>
                   <Badge className="mt-2">+200 XP</Badge>
                 </div>
               </CardContent>
@@ -316,7 +399,11 @@ export default function DashboardPage() {
                   </div>
                 </div>
                 <Link href="/leaderboard">
-                  <Button className="w-full mt-3 bg-transparent" variant="outline" size="sm">
+                  <Button
+                    className="w-full mt-3 bg-transparent"
+                    variant="outline"
+                    size="sm"
+                  >
                     Xem toàn bộ
                   </Button>
                 </Link>
@@ -326,5 +413,5 @@ export default function DashboardPage() {
         </div>
       </div>
     </div>
-  )
+  );
 }
