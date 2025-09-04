@@ -9,6 +9,7 @@ import { AuthModule } from './auth/auth.module';
 import { UsersModule } from './users/users.module';
 import { join } from 'path';
 import { ServeStaticModule } from '@nestjs/serve-static';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
@@ -22,6 +23,7 @@ import { ServeStaticModule } from '@nestjs/serve-static';
       autoLoadEntities: true,
       synchronize: false, // true = tự tạo bảng, false = dùng bảng có sẵn
     }),
+    ConfigModule.forRoot({ isGlobal: true }),
     ServeStaticModule.forRoot({
       rootPath: join(__dirname, '..', 'uploads'), // thư mục chứa ảnh
       serveRoot: '/uploads', // prefix public

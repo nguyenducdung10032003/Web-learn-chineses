@@ -19,12 +19,15 @@ export class DecksService {
 
   findAll() {
     return this.deckRepository.find({
-      relations: ['flashcards','studyActivities']
+      relations: ['flashcards', 'studyActivities'],
     });
   }
 
   findOne(id: number) {
-    return this.deckRepository.findOneBy({ id });
+    return this.deckRepository.findOne({
+      where: { id },
+      relations: ['flashcards', 'studyActivities'],
+    });
   }
 
   update(id: number, updateDeckDto: UpdateDeckDto) {

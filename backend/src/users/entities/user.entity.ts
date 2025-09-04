@@ -9,6 +9,10 @@ import {
 import { Deck } from '../../decks/entities/deck.entity';
 import { StudyStats } from 'src/decks/entities/studyStats.entity';
 import { StudyActivity } from 'src/decks/entities/studyActivity.entity';
+import { UserBadge } from './user-badge.entity';
+import { UserMission } from './user-mission.entity';
+import { UserAchievement } from './user-achievement.entity';
+import { UserActivity } from './user-activity.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -75,6 +79,19 @@ export class User {
   @UpdateDateColumn({ name: 'updated_at' })
   updatedAt: Date;
 
+  // relations
+  @OneToMany(() => UserAchievement, (ua) => ua.user)
+  achievements: UserAchievement[];
+
+  @OneToMany(() => UserBadge, (ub) => ub.user)
+  badges: UserBadge[];
+
+  @OneToMany(() => UserActivity, (ua) => ua.user)
+  activities: UserActivity[];
+
+  @OneToMany(() => UserMission, (um) => um.user)
+  missions: UserMission[];
+
   @OneToMany(() => Deck, (deck) => deck.user)
   decks: Deck[];
 
@@ -83,4 +100,10 @@ export class User {
 
   @OneToMany(() => StudyActivity, (study) => study.user)
   studyActivities: StudyActivity[];
+
+  @OneToMany(() => UserMission, (um) => um.mission)
+  userMissions: UserMission[];
+
+  @OneToMany(() => UserAchievement, (ua) => ua.achievement)
+  userAchievements: UserAchievement[];
 }
