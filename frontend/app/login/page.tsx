@@ -17,6 +17,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
 import { Eye, EyeOff, Mail, Lock, ArrowLeft } from "lucide-react";
+import { useAuth } from "@/context/AuthContext";
 
 export default function LoginPage() {
   const [showPassword, setShowPassword] = useState(false);
@@ -24,7 +25,8 @@ export default function LoginPage() {
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
-  
+  const { login } = useAuth();
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
@@ -43,14 +45,12 @@ export default function LoginPage() {
       if (!res.ok) {
         throw new Error("Login failed");
       }
-
+if (!res.ok) throw new Error("Login failed");
       const data = await res.json();
-
-      // ✅ Lưu token vào localStorage
+login(data.token, data.user);
       localStorage.setItem("token", data.token);
       localStorage.setItem("user", JSON.stringify(data.user));
-      // ✅ Chuyển hướng sang dashboard
-      router.push("/dashboard"); // chuyển sang dashboard
+      router.push("/dashboard");
     } catch (error) {
       console.error("Login error:", error);
       alert("Đăng nhập thất bại, vui lòng thử lại.");

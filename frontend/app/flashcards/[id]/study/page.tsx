@@ -57,6 +57,7 @@ export default function StudyPage({
   const [deck, setDeck] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const { id } = React.use(params);
+  const [startTime, setStartTime] = useState<number>(Date.now());
 
   // const deck = {
   //   id: Number.parseInt(params.id),
@@ -128,7 +129,34 @@ export default function StudyPage({
   const flashcards = deck.flashcards;
   const currentCard = flashcards[currentCardIndex];
   const progress = ((currentCardIndex + 1) / flashcards.length) * 100;
+  async function recordStudy(
+    deckId: number,
+    flashcardId: number,
+    correct: boolean,
+    timeSpent: number
+  ) {
+    try {
+      const token = localStorage.getItem("token"); // lấy JWT
+      const res = await fetch(`${BASE_URL}/decks/record-study`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+        body: JSON.stringify({
+          deckId,
+          correct,
+          flashcardId: [flashcardId],
+          timeSpent,
+        }),
+      });
 
+      return await res.json();
+      console.log(await res.json());
+    } catch (error) {
+      console.error("Error recordStudy:", error);
+    }
+  }
   const generateMultipleChoice = () => {
     const correctAnswer = currentCard.vietnamese;
     const wrongAnswers = ["Tạm biệt", "Học tập", "Tiếng Anh", "Chào buổi sáng"]
@@ -206,12 +234,16 @@ export default function StudyPage({
     }
   };
 
-  const handleAnswer = (difficulty: "easy" | "good" | "hard" | "again") => {
+  const handleAnswer = async (
+    difficulty: "easy" | "good" | "hard" | "again"
+  ) => {
     const newResults = { ...studyResults, [currentCard.id]: difficulty };
     setStudyResults(newResults);
 
     const isCorrect = difficulty === "easy" || difficulty === "good";
     const newStreak = isCorrect ? sessionStats.streak + 1 : 0;
+
+    const timeSpent = Math.floor((Date.now() - startTime) / 1000);
 
     setSessionStats((prev) => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
@@ -219,16 +251,17 @@ export default function StudyPage({
       xpEarned: prev.xpEarned + (isCorrect ? 10 + newStreak * 2 : 5),
       streak: newStreak,
     }));
-
+    await recordStudy(deck.id, currentCard.id, isCorrect, timeSpent);
     if (currentCardIndex < flashcards.length - 1) {
       setCurrentCardIndex(currentCardIndex + 1);
+      setStartTime(Date.now());
       resetExerciseState();
     } else {
       console.log("Session complete!", sessionStats);
     }
   };
 
-  const handleExerciseSubmit = () => {
+  const handleExerciseSubmit = async () => {
     let isCorrect = false;
 
     switch (exerciseType) {
@@ -252,12 +285,14 @@ export default function StudyPage({
     setShowExerciseResult(true);
 
     const newStreak = isCorrect ? sessionStats.streak + 1 : 0;
+    const timeSpent = Math.floor((Date.now() - startTime) / 1000);
     setSessionStats((prev) => ({
       correct: prev.correct + (isCorrect ? 1 : 0),
       total: prev.total + 1,
       xpEarned: prev.xpEarned + (isCorrect ? 15 + newStreak * 3 : 5),
       streak: newStreak,
     }));
+    await recordStudy(deck.id, currentCard.id, isCorrect, timeSpent);
   };
 
   const resetExerciseState = () => {

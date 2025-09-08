@@ -27,6 +27,7 @@ import {
   CheckCircle,
   MessageCircle,
 } from "lucide-react";
+import { BASE_URL } from "@/constants";
 
 export default function DashboardPage() {
   // const [user] = useState({
@@ -60,10 +61,24 @@ export default function DashboardPage() {
   const [user, setUser] = useState<any>(null);
 
   useEffect(() => {
-    const savedUser = localStorage.getItem("user");
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
+    const token = localStorage.getItem("token");
+    if (!token) return;
+    const fetchDashboard = async () => {
+      try {
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${BASE_URL}/users/me/dashboard`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
+        const data = await res.json();
+        setUser(data.user);
+      } catch (error) {
+        console.error("Lỗi fetch dashboard:", error);
+      }
+    };
+    fetchDashboard();
   }, []);
 
   if (!user) {
@@ -261,7 +276,7 @@ export default function DashboardPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  {user.recentActivity.map((activity) => (
+                  {user.activities.map((activity) => (
                     <div
                       key={activity.id}
                       className="flex items-center justify-between p-3 rounded-lg border"
@@ -330,15 +345,15 @@ export default function DashboardPage() {
                 <div className="grid grid-cols-2 gap-3">
                   {user.badges.map((badge) => (
                     <div
-                      key={badge.id}
+                      key={badge.badgeId}
                       className={`p-3 rounded-lg border text-center ${
                         badge.earned
                           ? "bg-primary/5 border-primary/20"
                           : "bg-muted/50 opacity-50"
                       }`}
                     >
-                      <div className="text-2xl mb-1">{badge.icon}</div>
-                      <p className="text-xs font-medium">{badge.name}</p>
+                      <div className="text-2xl mb-1">{badge.badge.icon}</div>
+                      <p className="text-xs font-medium">{badge.badge.name}</p>
                     </div>
                   ))}
                 </div>

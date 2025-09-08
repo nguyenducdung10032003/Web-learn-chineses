@@ -35,6 +35,7 @@ export default function FlashcardsPage() {
   const [searchQuery, setSearchQuery] = useState("");
   const [flashcardDecks, setFlashcardDecks] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [studyStats, setStudyStats] = useState<any>(null);
   // const flashcardDecks = [
   //   {
   //     id: 1,
@@ -114,9 +115,15 @@ export default function FlashcardsPage() {
   useEffect(() => {
     const fetchDecks = async () => {
       try {
-        const res = await fetch(`${BASE_URL}/decks`); // gọi API backend
+        const token = localStorage.getItem("token");
+        const res = await fetch(`${BASE_URL}/decks`, {
+          headers: {
+            "Content-Type": "application/json",
+            ...(token ? { Authorization: `Bearer ${token}` } : {}),
+          },
+        });
         const data = await res.json();
-        setFlashcardDecks(data); // backend trả về mảng decks
+        setFlashcardDecks(data);
       } catch (error) {
         console.error("Lỗi fetch decks:", error);
       } finally {
@@ -124,6 +131,23 @@ export default function FlashcardsPage() {
       }
     };
     fetchDecks();
+    
+    const fetchDashboard = async () => {
+    try {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${BASE_URL}/users/me/dashboard`, {
+        headers: {
+          "Content-Type": "application/json",
+          ...(token ? { Authorization: `Bearer ${token}` } : {}),
+        },
+      });
+      const data = await res.json();
+      setStudyStats(data.user.studyStats);
+    } catch (error) {
+      console.error("Lỗi fetch dashboard:", error);
+    }
+  };
+  fetchDashboard();
   }, []);
   const filteredDecks = flashcardDecks.filter((deck) =>
     deck.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -158,7 +182,7 @@ export default function FlashcardsPage() {
               <BookOpen className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold">{studyStats.totalCards}</div> */}
+              <div className="text-2xl font-bold">{studyStats?.totalCards}</div>
             </CardContent>
           </Card>
 
@@ -169,7 +193,7 @@ export default function FlashcardsPage() {
             </CardHeader>
             <CardContent>
               <div className="text-2xl font-bold">
-                {/* {studyStats.studiedToday} */}
+                {studyStats?.studiedToday}
               </div>
             </CardContent>
           </Card>
@@ -180,7 +204,7 @@ export default function FlashcardsPage() {
               <Calendar className="h-4 w-4 text-orange-500" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold">{studyStats.streak}</div> */}
+              <div className="text-2xl font-bold">{studyStats?.streak}</div>
             </CardContent>
           </Card>
 
@@ -192,7 +216,7 @@ export default function FlashcardsPage() {
               <TrendingUp className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold">{studyStats.accuracy}%</div> */}
+              <div className="text-2xl font-bold">{studyStats?.accuracy}%</div>
             </CardContent>
           </Card>
 
@@ -204,7 +228,7 @@ export default function FlashcardsPage() {
               <Clock className="h-4 w-4 text-primary" />
             </CardHeader>
             <CardContent>
-              {/* <div className="text-2xl font-bold">{studyStats.timeSpent}p</div> */}
+              <div className="text-2xl font-bold">{studyStats?.timeSpent}p</div>
             </CardContent>
           </Card>
         </div>
@@ -230,86 +254,112 @@ export default function FlashcardsPage() {
 
             {/* Flashcard Decks */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredDecks.map((deck) => (
-                <Card
-                  key={deck.id}
-                  className="overflow-hidden hover:shadow-lg transition-shadow"
-                >
-                  <div className="relative">
-                    <img
-                      src={`${BASE_URL}${deck.image}`}
-                      alt={deck.title}
-                      className="w-full h-32 object-cover"
-                    />
-                    <div className="absolute top-3 left-3">
-                      <Badge className={deck.color}>{deck.level}</Badge>
-                    </div>
-                    {deck.isPersonal && (
-                      <div className="absolute top-3 right-3">
-                        <Badge variant="secondary">Cá nhân</Badge>
-                      </div>
-                    )}
-                  </div>
-                  <CardHeader>
-                    <CardTitle className="text-lg">{deck.title}</CardTitle>
-                    <CardDescription>{deck.description}</CardDescription>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="space-y-4">
-                      <div className="flex items-center justify-between text-sm">
-                        <span>Tiến độ học</span>
-                        <span>
-                          {Math.round(
-                            (deck.studiedCards / deck.totalCards) * 100
-                          )}
-                          %
-                        </span>
-                      </div>
-                      <Progress
-                        value={(deck.studiedCards / deck.totalCards) * 100}
+              {filteredDecks.map((deck) => {
+                const userDeck = deck.userDecks?.[0];
+                return (
+                  <Card
+                    key={deck.id}
+                    className="overflow-hidden hover:shadow-lg transition-shadow"
+                  >
+                    <div className="relative">
+                      <img
+                        src={`${BASE_URL}${deck.image}`}
+                        alt={deck.title}
+                        className="w-full h-32 object-cover"
                       />
-
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>
-                          {deck.studiedCards}/{deck.totalCards} thẻ
-                        </span>
-                        <span>{deck.masteredCards} thành thạo</span>
+                      <div className="absolute top-3 left-3">
+                        <Badge className={deck.color}>{deck.level}</Badge>
                       </div>
-
-                      <div className="flex items-center justify-between text-sm text-muted-foreground">
-                        <span>
-                          Học lần cuối:{" "}
-                          {format(
-                            new Date(deck.lastStudied),
-                            "dd/MM/yyyy HH:mm"
+                      {deck.isPersonal && (
+                        <div className="absolute top-3 right-3">
+                          <Badge variant="secondary">Cá nhân</Badge>
+                        </div>
+                      )}
+                    </div>
+                    <CardHeader>
+                      <CardTitle className="text-lg">{deck.title}</CardTitle>
+                      <CardDescription>{deck.description}</CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                      <div className="space-y-4">
+                        <div className="flex items-center justify-between text-sm">
+                          <span>Tiến độ học</span>
+                          {userDeck ? (
+                            <span>
+                              {Math.round(
+                                (userDeck.studiedCards / deck.totalCards) * 100
+                              )}
+                              %
+                            </span>
+                          ) : (
+                            <span>Chưa có tiến độ</span>
                           )}
-                        </span>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-3 w-3" />
-                          <span>{deck.streak} ngày</span>
+                        </div>
+                        <Progress
+                          value={
+                            userDeck
+                              ? (userDeck.studiedCards / deck.totalCards) * 100
+                              : 0
+                          }
+                        />
+
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          {userDeck ? (
+                            <>
+                              <span>
+                                {userDeck.studiedCards}/{deck.totalCards} thẻ
+                              </span>
+                              <span>{userDeck.masteredCards} thành thạo</span>
+                            </>
+                          ) : (
+                            <span>Chưa học</span>
+                          )}
+                        </div>
+
+                        <div className="flex items-center justify-between text-sm text-muted-foreground">
+                          {userDeck && userDeck.lastStudied ? (
+                            <span>
+                              Học lần cuối:{" "}
+                              {format(
+                                new Date(userDeck.lastStudied),
+                                "dd/MM/yyyy HH:mm"
+                              )}
+                            </span>
+                          ) : (
+                            <p>Chưa học </p>
+                          )}
+
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {userDeck ? (
+                              <span>{userDeck.streak} ngày</span>
+                            ) : (
+                              <span>Chưa có streak</span>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/flashcards/${deck.id}/study`}
+                            className="flex-1"
+                          >
+                            <Button className="w-full">
+                              <Play className="h-4 w-4 mr-2" />
+                              Học ngay
+                            </Button>
+                          </Link>
+                          <Link href={`/flashcards/${deck.id}/quick`}>
+                            <Button variant="outline">
+                              <Zap className="h-4 w-4" />
+                            </Button>
+                          </Link>
                         </div>
                       </div>
-
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/flashcards/${deck.id}/study`}
-                          className="flex-1"
-                        >
-                          <Button className="w-full">
-                            <Play className="h-4 w-4 mr-2" />
-                            Học ngay
-                          </Button>
-                        </Link>
-                        <Link href={`/flashcards/${deck.id}/quick`}>
-                          <Button variant="outline">
-                            <Zap className="h-4 w-4" />
-                          </Button>
-                        </Link>
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </TabsContent>
 
