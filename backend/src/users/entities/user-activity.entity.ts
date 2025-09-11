@@ -19,6 +19,9 @@ export class UserActivity {
   @JoinColumn({ name: 'user_id' })
   user: User;
 
+  @Column({ name: 'user_id' })
+  userId: number;
+
   @Column({
     type: 'enum',
     enum: ['lesson', 'flashcard', 'quiz', 'game'],
@@ -31,6 +34,10 @@ export class UserActivity {
   @Column({ default: 0 })
   xp: number;
 
-  @Column({ name: "activity_time", type: "timestamp", default: () => "CURRENT_TIMESTAMP" })
+  @Column({
+    name: 'activity_time',
+    type: 'timestamp',
+    default: () => 'CURRENT_TIMESTAMP',
+  })
   activityTime: Date;
 }

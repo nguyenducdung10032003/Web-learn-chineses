@@ -142,9 +142,10 @@ export default function FlashcardsPage() {
         },
       });
       const data = await res.json();
-      setStudyStats(data.user.studyStats);
+      setStudyStats(data?.user?.studyStats ?? null);
     } catch (error) {
       console.error("Lỗi fetch dashboard:", error);
+      setStudyStats(null);
     }
   };
   fetchDashboard();
@@ -270,11 +271,11 @@ export default function FlashcardsPage() {
                       <div className="absolute top-3 left-3">
                         <Badge className={deck.color}>{deck.level}</Badge>
                       </div>
-                      {deck.isPersonal && (
+                      {/* {deck.isPersonal && (
                         <div className="absolute top-3 right-3">
                           <Badge variant="secondary">Cá nhân</Badge>
                         </div>
-                      )}
+                      )} */}
                     </div>
                     <CardHeader>
                       <CardTitle className="text-lg">{deck.title}</CardTitle>
@@ -349,11 +350,11 @@ export default function FlashcardsPage() {
                               Học ngay
                             </Button>
                           </Link>
-                          <Link href={`/flashcards/${deck.id}/quick`}>
+                          {/* <Link href={`/flashcards/${deck.id}/quick`}>
                             <Button variant="outline">
                               <Zap className="h-4 w-4" />
                             </Button>
-                          </Link>
+                          </Link> */}
                         </div>
                       </div>
                     </CardContent>

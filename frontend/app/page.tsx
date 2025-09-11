@@ -30,11 +30,11 @@ export default function HomePage() {
                 Bắt đầu học ngay
               </Button>
             </Link>
-            <Link href="/demo">
+            {/* <Link href="/demo">
               <Button size="lg" variant="outline" className="text-lg px-8 bg-transparent">
                 Xem demo
               </Button>
-            </Link>
+            </Link> */}
           </div>
         </div>
       </section>

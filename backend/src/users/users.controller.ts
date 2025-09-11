@@ -1,4 +1,15 @@
-import { Controller, Get, Post, Body, Patch, Param, Delete } from '@nestjs/common';
+import {
+  Controller,
+  Get,
+  Post,
+  Body,
+  Patch,
+  Param,
+  Delete,
+  Req,
+  UseGuards,
+} from '@nestjs/common';
+import { OptionalJwtAuthGuard } from '../auth/jwt-auth.guard';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
@@ -30,5 +41,37 @@ export class UsersController {
   @Delete(':id')
   remove(@Param('id') id: string) {
     return this.usersService.remove(+id);
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @Get('me/dashboard')
+  async getDashboard(@Req() req: any) {
+    const userId = req.user?.id;
+
+    if (!userId) {
+      // Đảm bảo luôn trả JSON hợp lệ
+      return { studyStats: null, message: 'Guest user' };
+    }
+    const user = await this.usersService.getUserDashboard(userId);
+    return { user };
+  }
+
+  @UseGuards(OptionalJwtAuthGuard)
+  @Post(':id/play')
+  async recordGamePlay(
+    @Param('id') id: string,
+    @Req() req,
+    @Body() body: { correct: number; total: number; timeSpent: number },
+  ) {
+    console.log('recordGamePlay req.user =', req.user);
+    console.log('body =', body);
+
+    const userId = req.user?.id;
+
+    if (!userId) {
+      return { message: 'User not authenticated' };
+    }
+
+    return this.usersService.recordGamePlay(userId, +id, body);
   }
 }

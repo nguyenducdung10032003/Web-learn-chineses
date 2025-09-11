@@ -10,10 +10,11 @@ import { UserMission } from './entities/user-mission.entity';
 import { Badge } from './entities/badges.entity';
 import { Achievement } from './entities/achievements.entity';
 import { Mission } from './entities/missions.entity';
+import { StudyStats } from 'src/decks/entities/studyStats.entity';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, UserAchievement, UserBadge, UserActivity, UserMission, Badge, Achievement, Mission]),
+    TypeOrmModule.forFeature([User, UserAchievement, UserBadge, UserActivity, UserMission, Badge, Achievement, Mission, StudyStats]),
   ],
   controllers: [UsersController],
   providers: [UsersService],

@@ -5,6 +5,8 @@ import {
   CreateDateColumn,
   UpdateDateColumn,
   OneToMany,
+  OneToOne,
+  JoinColumn
 } from 'typeorm';
 import { Deck } from '../../decks/entities/deck.entity';
 import { StudyStats } from 'src/decks/entities/studyStats.entity';
@@ -13,6 +15,8 @@ import { UserBadge } from './user-badge.entity';
 import { UserMission } from './user-mission.entity';
 import { UserAchievement } from './user-achievement.entity';
 import { UserActivity } from './user-activity.entity';
+import { UserDeck } from '../../decks/entities/user-deck.entity'
+
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
@@ -95,7 +99,8 @@ export class User {
   @OneToMany(() => Deck, (deck) => deck.user)
   decks: Deck[];
 
-  @OneToMany(() => StudyStats, (study) => study.user)
+  @OneToOne(() => StudyStats, (study) => study.user)
+  @JoinColumn({ name: 'id', referencedColumnName: 'userId' })
   studyStats: StudyStats[];
 
   @OneToMany(() => StudyActivity, (study) => study.user)
@@ -106,4 +111,7 @@ export class User {
 
   @OneToMany(() => UserAchievement, (ua) => ua.achievement)
   userAchievements: UserAchievement[];
+
+  @OneToMany(() => UserDeck, (userDeck) => userDeck.user)
+  userDecks: UserDeck[];
 }

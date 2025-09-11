@@ -3,6 +3,8 @@ import type { Metadata } from "next"
 import { Inter, Space_Grotesk } from "next/font/google"
 import "./globals.css"
 import { Navigation } from "@/components/navigation"
+import { AuthProvider } from "@/context/AuthContext"
+import { Providers } from "./providers"
 
 const inter = Inter({
   subsets: ["latin"],
@@ -30,8 +32,10 @@ export default function RootLayout({
   return (
     <html lang="vi" className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>
       <body className="font-sans">
-        <Navigation />
-        <main>{children}</main>
+        <Providers>
+          <Navigation />
+          <main>{children}</main>
+        </Providers>
       </body>
     </html>
   )

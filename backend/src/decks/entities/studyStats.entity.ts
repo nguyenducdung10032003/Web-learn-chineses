@@ -6,6 +6,7 @@ import {
   JoinColumn,
   CreateDateColumn,
   UpdateDateColumn,
+  OneToOne
 } from 'typeorm';
 import { User } from '../../users/entities/user.entity';
 
@@ -17,7 +18,7 @@ export class StudyStats {
   @Column({ name: 'user_id' })
   userId: number;
 
-  @ManyToOne(() => User, (user) => user.studyStats, { onDelete: 'CASCADE' })
+  @OneToOne(() => User, (user) => user.studyStats, { onDelete: 'CASCADE' })
   @JoinColumn({ name: 'user_id' })
   user: User;
 
@@ -41,4 +42,7 @@ export class StudyStats {
 
   @UpdateDateColumn({ name: 'updated_at', type: 'timestamp' })
   updatedAt: Date;
+
+  @Column({ name: 'last_studied', type: 'timestamp', nullable: true })
+  lastStudied: Date | null;
 }

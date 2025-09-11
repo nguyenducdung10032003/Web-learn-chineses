@@ -1,25 +1,34 @@
-"use client"
+"use client";
 
-import { useState } from "react"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
-import { ArrowLeft, Plus, Trash2, Save, Eye } from "lucide-react"
+import { useState } from "react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
+import { Badge } from "@/components/ui/badge";
+import { ArrowLeft, Plus, Trash2, Save, Eye } from "lucide-react";
+import { BASE_URL } from "@/constants";
 
 export default function CreateFlashcardPage() {
   const [deckInfo, setDeckInfo] = useState({
     title: "",
     description: "",
     category: "Cá nhân",
-  })
+  });
 
-  const [cards, setCards] = useState([{ id: 1, chinese: "", pinyin: "", vietnamese: "" }])
+  const [cards, setCards] = useState([
+    { id: 1, chinese: "", pinyin: "", vietnamese: "" },
+  ]);
 
-  const [previewCard, setPreviewCard] = useState<number | null>(null)
+  const [previewCard, setPreviewCard] = useState<number | null>(null);
 
   const addCard = () => {
     const newCard = {
@@ -27,45 +36,66 @@ export default function CreateFlashcardPage() {
       chinese: "",
       pinyin: "",
       vietnamese: "",
-    }
-    setCards([...cards, newCard])
-  }
+    };
+    setCards([...cards, newCard]);
+  };
 
   const removeCard = (id: number) => {
     if (cards.length > 1) {
-      setCards(cards.filter((card) => card.id !== id))
+      setCards(cards.filter((card) => card.id !== id));
     }
-  }
+  };
 
   const updateCard = (id: number, field: string, value: string) => {
-    setCards(cards.map((card) => (card.id === id ? { ...card, [field]: value } : card)))
-  }
+    setCards(
+      cards.map((card) => (card.id === id ? { ...card, [field]: value } : card))
+    );
+  };
 
   const updateDeckInfo = (field: string, value: string) => {
-    setDeckInfo({ ...deckInfo, [field]: value })
-  }
+    setDeckInfo({ ...deckInfo, [field]: value });
+  };
 
-  const saveDeck = () => {
-    // Validate required fields
+  const saveDeck = async () => {
     if (!deckInfo.title.trim()) {
-      alert("Vui lòng nhập tên bộ thẻ")
-      return
+      alert("Vui lòng nhập tên bộ thẻ");
+      return;
     }
 
-    const validCards = cards.filter((card) => card.chinese.trim() && card.vietnamese.trim())
-    if (validCards.length === 0) {
-      alert("Vui lòng tạo ít nhất một thẻ hợp lệ")
-      return
-    }
+    const validCards = cards
+      .filter((card) => card.chinese.trim() && card.vietnamese.trim())
+      .map(({ id, ...rest }) => rest);
 
-    // In a real app, this would save to a database
-    console.log("Saving deck:", { deckInfo, cards: validCards })
-    alert(`Đã tạo bộ thẻ "${deckInfo.title}" với ${validCards.length} thẻ!`)
-  }
+    try {
+      const res = await fetch(`${BASE_URL}/decks`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${localStorage.getItem("token")}`, // 👈 lấy token đã login
+        },
+        body: JSON.stringify({
+          ...deckInfo,
+          flashcards: validCards,
+        }),
+      });
+
+      if (!res.ok) {
+        throw new Error("Failed to save deck");
+      }
+
+      const data = await res.json();
+      alert(
+        `✅ Đã tạo bộ thẻ "${data.title}" với ${data.flashcards.length} thẻ!`
+      );
+    } catch (err) {
+      console.error(err);
+      alert("❌ Lỗi khi lưu bộ thẻ");
+    }
+  };
 
   const previewDeck = () => {
-    console.log("Preview deck:", { deckInfo, cards })
-  }
+    console.log("Preview deck:", { deckInfo, cards });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background to-muted">
@@ -73,12 +103,17 @@ export default function CreateFlashcardPage() {
       <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="container mx-auto px-4 py-4 flex items-center justify-between">
           <div className="flex items-center space-x-4">
-            <Link href="/flashcards" className="text-muted-foreground hover:text-foreground">
+            <Link
+              href="/flashcards"
+              className="text-muted-foreground hover:text-foreground"
+            >
               <ArrowLeft className="w-5 h-5" />
             </Link>
             <div>
               <h1 className="font-semibold">Tạo bộ thẻ mới</h1>
-              <p className="text-sm text-muted-foreground">Tạo bộ flashcard cá nhân của bạn</p>
+              <p className="text-sm text-muted-foreground">
+                Tạo bộ flashcard cá nhân của bạn
+              </p>
             </div>
           </div>
           <div className="flex items-center gap-2">
@@ -99,7 +134,9 @@ export default function CreateFlashcardPage() {
         <Card className="mb-8">
           <CardHeader>
             <CardTitle>Thông tin bộ thẻ</CardTitle>
-            <CardDescription>Nhập thông tin cơ bản cho bộ flashcard của bạn</CardDescription>
+            <CardDescription>
+              Nhập thông tin cơ bản cho bộ flashcard của bạn
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             <div className="grid md:grid-cols-2 gap-4">
@@ -154,7 +191,9 @@ export default function CreateFlashcardPage() {
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => setPreviewCard(previewCard === card.id ? null : card.id)}
+                      onClick={() =>
+                        setPreviewCard(previewCard === card.id ? null : card.id)
+                      }
                     >
                       <Eye className="h-4 w-4" />
                     </Button>
@@ -175,7 +214,9 @@ export default function CreateFlashcardPage() {
                     <Input
                       placeholder="你好"
                       value={card.chinese}
-                      onChange={(e) => updateCard(card.id, "chinese", e.target.value)}
+                      onChange={(e) =>
+                        updateCard(card.id, "chinese", e.target.value)
+                      }
                     />
                   </div>
                   <div className="space-y-2">
@@ -183,7 +224,9 @@ export default function CreateFlashcardPage() {
                     <Input
                       placeholder="nǐ hǎo"
                       value={card.pinyin}
-                      onChange={(e) => updateCard(card.id, "pinyin", e.target.value)}
+                      onChange={(e) =>
+                        updateCard(card.id, "pinyin", e.target.value)
+                      }
                     />
                   </div>
                   <div className="space-y-2">
@@ -191,25 +234,40 @@ export default function CreateFlashcardPage() {
                     <Input
                       placeholder="Xin chào"
                       value={card.vietnamese}
-                      onChange={(e) => updateCard(card.id, "vietnamese", e.target.value)}
+                      onChange={(e) =>
+                        updateCard(card.id, "vietnamese", e.target.value)
+                      }
                     />
                   </div>
                 </div>
 
                 {/* Preview */}
-                {previewCard === card.id && (card.chinese || card.vietnamese) && (
-                  <div className="mt-4 p-4 bg-muted/30 rounded-lg">
-                    <div className="text-center space-y-2">
-                      <div className="text-2xl font-bold text-primary">{card.chinese || "..."}</div>
-                      {card.pinyin && <div className="text-muted-foreground">{card.pinyin}</div>}
-                      <div className="text-lg">{card.vietnamese || "..."}</div>
+                {previewCard === card.id &&
+                  (card.chinese || card.vietnamese) && (
+                    <div className="mt-4 p-4 bg-muted/30 rounded-lg">
+                      <div className="text-center space-y-2">
+                        <div className="text-2xl font-bold text-primary">
+                          {card.chinese || "..."}
+                        </div>
+                        {card.pinyin && (
+                          <div className="text-muted-foreground">
+                            {card.pinyin}
+                          </div>
+                        )}
+                        <div className="text-lg">
+                          {card.vietnamese || "..."}
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
               </Card>
             ))}
 
-            <Button variant="outline" onClick={addCard} className="w-full bg-transparent">
+            <Button
+              variant="outline"
+              onClick={addCard}
+              className="w-full bg-transparent"
+            >
               <Plus className="h-4 w-4 mr-2" />
               Thêm thẻ mới
             </Button>
@@ -223,10 +281,15 @@ export default function CreateFlashcardPage() {
           </Link>
           <Button onClick={saveDeck} size="lg">
             <Save className="h-4 w-4 mr-2" />
-            Lưu bộ thẻ ({cards.filter((c) => c.chinese.trim() && c.vietnamese.trim()).length} thẻ)
+            Lưu bộ thẻ (
+            {
+              cards.filter((c) => c.chinese.trim() && c.vietnamese.trim())
+                .length
+            }{" "}
+            thẻ)
           </Button>
         </div>
       </div>
     </div>
-  )
+  );
 }

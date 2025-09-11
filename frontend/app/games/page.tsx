@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import {
   Card,
   CardContent,
@@ -25,6 +25,8 @@ import {
   Link,
 } from "lucide-react";
 import { BASE_URL } from "@/constants";
+import { useToast } from "@/components/ui/use-toast";
+import { useAuth } from "@/context/AuthContext";
 
 const ICON_MAP = {
   Zap,
@@ -56,17 +58,25 @@ type GameUI = {
   id: number;
   title: string;
   description: string;
-  icon: React.ComponentType<any>; // mapped component
+  icon: React.ComponentType<any>;
   difficulty: string;
   xpReward: number;
   timeLimit: number;
   color: string;
   createdAt: string;
 };
+
+// Định nghĩa kiểu dữ liệu cho các tùy chọn
+type Option = {
+  id: number;
+  option_text: string;
+  is_correct: boolean;
+};
+
 type MCQ = {
   type: "multiple-choice";
   question: string;
-  options: string[];
+  options: Option[];
   correct: number;
 };
 
@@ -103,187 +113,6 @@ type GrammarFix = {
 
 type Question = MCQ | FillBlank | Matching | WordOrder | GrammarFix;
 
-// const games = [
-//   {
-//     id: 1,
-//     title: "Tốc độ ánh sáng",
-//     description: "Trả lời nhanh các câu hỏi ngữ pháp trong 10 giây",
-//     icon: Zap,
-//     difficulty: "Dễ",
-//     xpReward: 50,
-//     timeLimit: 10,
-//     color: "bg-yellow-500",
-//   },
-//   {
-//     id: 2,
-//     title: "Điền từ tốc độ",
-//     description: "Điền từ vào chỗ trống trong câu tiếng Trung",
-//     icon: Edit,
-//     difficulty: "Trung bình",
-//     xpReward: 75,
-//     timeLimit: 15,
-//     color: "bg-blue-500",
-//   },
-//   {
-//     id: 3,
-//     title: "Nối câu nhanh",
-//     description: "Ghép đúng câu tiếng Trung với nghĩa tiếng Việt",
-//     icon: Link,
-//     difficulty: "Trung bình",
-//     xpReward: 75,
-//     timeLimit: 12,
-//     color: "bg-green-500",
-//   },
-//   {
-//     id: 4,
-//     title: "Sắp xếp từ",
-//     description: "Sắp xếp các từ thành câu đúng ngữ pháp",
-//     icon: Shuffle,
-//     difficulty: "Khó",
-//     xpReward: 100,
-//     timeLimit: 20,
-//     color: "bg-purple-500",
-//   },
-//   {
-//     id: 5,
-//     title: "Sửa lỗi tốc độ",
-//     description: "Tìm và sửa lỗi ngữ pháp trong câu",
-//     icon: Target,
-//     difficulty: "Khó",
-//     xpReward: 100,
-//     timeLimit: 18,
-//     color: "bg-red-500",
-//   },
-//   {
-//     id: 6,
-//     title: "Đấu 1v1",
-//     description: "Thách đấu với người chơi khác trong thời gian thực",
-//     icon: Users,
-//     difficulty: "Khó",
-//     xpReward: 150,
-//     timeLimit: 30,
-//     color: "bg-orange-500",
-//   },
-// ];
-
-// const gameQuestions: Record<number, Question[]> = {
-//   1: [
-//     // Multiple choice
-//     {
-//       type: "multiple-choice",
-//       question: 'Từ "你好" có nghĩa là gì?',
-//       options: ["Tạm biệt", "Xin chào", "Cảm ơn", "Xin lỗi"],
-//       correct: 1,
-//     },
-//     {
-//       type: "multiple-choice",
-//       question: 'Cách nói "Tôi yêu bạn" trong tiếng Trung là?',
-//       options: ["我爱你", "我喜欢你", "我想你", "我需要你"],
-//       correct: 0,
-//     },
-//     {
-//       type: "multiple-choice",
-//       question: 'Từ "学习" có nghĩa là gì?',
-//       options: ["Làm việc", "Học tập", "Chơi", "Nghỉ ngơi"],
-//       correct: 1,
-//     },
-//   ],
-//   2: [
-//     // Fill in the blank
-//     {
-//       type: "fill-blank",
-//       question: "我___学生。(Tôi là học sinh)",
-//       sentence: "我___学生。",
-//       blank: "是",
-//       options: ["是", "在", "有", "会"],
-//     },
-//     {
-//       type: "fill-blank",
-//       question: "他___中国人。(Anh ấy là người Trung Quốc)",
-//       sentence: "他___中国人。",
-//       blank: "是",
-//       options: ["是", "在", "有", "会"],
-//     },
-//     {
-//       type: "fill-blank",
-//       question: "我___北京。(Tôi ở Bắc Kinh)",
-//       sentence: "我___北京。",
-//       blank: "在",
-//       options: ["是", "在", "有", "会"],
-//     },
-//   ],
-//   3: [
-//     // Sentence matching
-//     {
-//       type: "matching",
-//       question: "Ghép câu tiếng Trung với nghĩa tiếng Việt:",
-//       chinese: ["你好吗？", "我很好", "谢谢你"],
-//       vietnamese: ["Cảm ơn bạn", "Bạn khỏe không?", "Tôi rất khỏe"],
-//       correctPairs: [
-//         [0, 1],
-//         [1, 2],
-//         [2, 0],
-//       ], // chinese[0] matches vietnamese[1], etc.
-//     },
-//     {
-//       type: "matching",
-//       question: "Ghép câu tiếng Trung với nghĩa tiếng Việt:",
-//       chinese: ["我爱你", "再见", "对不起"],
-//       vietnamese: ["Xin lỗi", "Tạm biệt", "Tôi yêu bạn"],
-//       correctPairs: [
-//         [0, 2],
-//         [1, 1],
-//         [2, 0],
-//       ],
-//     },
-//   ],
-//   4: [
-//     // Word ordering
-//     {
-//       type: "word-order",
-//       question: "Sắp xếp các từ thành câu đúng: 'Tôi là học sinh'",
-//       words: ["学生", "我", "是"],
-//       correctOrder: ["我", "是", "学生"],
-//     },
-//     {
-//       type: "word-order",
-//       question: "Sắp xếp các từ thành câu đúng: 'Anh ấy ở Trung Quốc'",
-//       words: ["中国", "在", "他"],
-//       correctOrder: ["他", "在", "中国"],
-//     },
-//     {
-//       type: "word-order",
-//       question: "Sắp xếp các từ thành câu đúng: 'Tôi học tiếng Trung'",
-//       words: ["中文", "学", "我"],
-//       correctOrder: ["我", "学", "中文"],
-//     },
-//   ],
-//   5: [
-//     // Grammar correction
-//     {
-//       type: "grammar-fix",
-//       question: "Tìm và sửa lỗi trong câu sau:",
-//       incorrectSentence: "我在是学生",
-//       correctSentence: "我是学生",
-//       explanation: "Không cần dùng '在' trước '是' khi nói về nghề nghiệp",
-//     },
-//     {
-//       type: "grammar-fix",
-//       question: "Tìm và sửa lỗi trong câu sau:",
-//       incorrectSentence: "他很喜欢很中文",
-//       correctSentence: "他很喜欢中文",
-//       explanation: "Không cần dùng hai '很' trong cùng một câu",
-//     },
-//     {
-//       type: "grammar-fix",
-//       question: "Tìm và sửa lỗi trong câu sau:",
-//       incorrectSentence: "我有在北京",
-//       correctSentence: "我在北京",
-//       explanation: "Dùng '在' để chỉ vị trí, không cần '有'",
-//     },
-//   ],
-// };
-
 export default function GamesPage() {
   const [selectedGame, setSelectedGame] = useState<number | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -303,6 +132,69 @@ export default function GamesPage() {
   const [loading, setLoading] = useState(true);
   const answeredRef = useRef(false);
   const [activeChinese, setActiveChinese] = useState<number | null>(null);
+  const { toast } = useToast();
+  const { user } = useAuth();
+  const [showResult, setShowResult] = useState(false);
+  const [isCorrect, setIsCorrect] = useState<boolean | null>(null);
+
+  // Hàm ghi lại kết quả game
+  const recordGamePlay = useCallback(
+    async (
+      gameId: number,
+      correct: number,
+      total: number,
+      timeSpent: number
+    ) => {
+      if (!user) {
+        console.log("User not logged in, skipping game record");
+        return;
+      }
+
+      try {
+        const response = await fetch(`${BASE_URL}/users/${gameId}/play`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+          body: JSON.stringify({
+            correct,
+            total,
+            timeSpent,
+          }),
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const result = await response.json();
+        console.log("Game result recorded:", result);
+
+        toast({
+          title: "Kết quả đã được lưu!",
+          description: `Bạn đã nhận được ${result.xpEarned || correct * 10} XP`,
+        });
+      } catch (error) {
+        console.error("Error recording game play:", error);
+        toast({
+          title: "Lỗi",
+          description: "Không thể lưu kết quả game",
+          variant: "destructive",
+        });
+      }
+    },
+    [user, toast]
+  );
+  useEffect(() => {
+    // reset khi sang câu hỏi mới
+    setShowResult(false);
+    setIsCorrect(null);
+    setCorrectedSentence("");
+    setWordOrder([]);
+    setSelectedPairs([]);
+    setUserInput("");
+  }, [currentQuestion]);
 
   useEffect(() => {
     const fetchGames = async () => {
@@ -311,7 +203,6 @@ export default function GamesPage() {
         if (!res.ok) throw new Error(`HTTP ${res.status}`);
         const data: GameFromApi[] = await res.json();
 
-        // Chuẩn hoá về camelCase + map icon
         const normalized: GameUI[] = data.map((g) => ({
           id: g.id,
           title: g.title,
@@ -326,7 +217,6 @@ export default function GamesPage() {
 
         setGamesList(normalized);
 
-        // nếu /games trả kèm questions trong từng game, preload vào map
         const qMap: Record<number, Question[]> = {};
         data.forEach((g) => {
           if (Array.isArray(g.questions)) qMap[g.id] = g.questions;
@@ -334,43 +224,58 @@ export default function GamesPage() {
         setGameQuestions(qMap);
       } catch (error) {
         console.error("Lỗi fetch games:", error);
+        toast({
+          title: "Lỗi",
+          description: "Không thể tải danh sách game",
+          variant: "destructive",
+        });
       } finally {
         setLoading(false);
       }
     };
     fetchGames();
-  }, []);
+  }, [toast]);
 
-  const games = gamesList;
   useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (isPlaying && timeLeft > 0 && !gameFinished) {
-      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
-    } else if (timeLeft === 0 && isPlaying) {
-      handleTimeUp();
+    if (gameFinished && selectedGame) {
+      const totalQuestions = getCurrentQuestions().length;
+      const correctAnswers = Math.floor(score / 5);
+      const totalTime =
+        totalQuestions *
+          (gamesList.find((g) => g.id === selectedGame)?.timeLimit || 10) -
+        timeLeft;
+
+      recordGamePlay(selectedGame, correctAnswers, totalQuestions, totalTime);
     }
-    return () => clearTimeout(timer);
-  }, [timeLeft, isPlaying, gameFinished]);
-  const fetchGameDetail = async (gameId: number) => {
-    const res = await fetch(`${BASE_URL}/games/${gameId}`, {
-      cache: "no-store",
-    });
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data: GameFromApi = await res.json();
-    return data;
-  };
+  }, [gameFinished, selectedGame, score, timeLeft, gamesList, recordGamePlay]);
+
   const getCurrentQuestions = () =>
     selectedGame ? gameQuestions[selectedGame] || [] : [];
+
+  const fetchGameDetail = async (gameId: number) => {
+    try {
+      const res = await fetch(`${BASE_URL}/games/${gameId}`, {
+        cache: "no-store",
+      });
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data: GameFromApi = await res.json();
+      return data;
+    } catch (error) {
+      console.error("Lỗi fetch game detail:", error);
+      throw error;
+    }
+  };
 
   const startGame = async (gameId: number) => {
     setSelectedGame(gameId);
     setIsPlaying(true);
     setCurrentQuestion(0);
     setScore(0);
-    const limit = games.find((g) => g.id === gameId)?.timeLimit || 10;
-    setTimeLeft(games.find((g) => g.id === gameId)?.timeLimit || 10);
+    const game = gamesList.find((g) => g.id === gameId);
+    setTimeLeft(game?.timeLimit || 10);
     setGameFinished(false);
     resetAnswerStates();
+
     if (!gameQuestions[gameId]) {
       try {
         const detail = await fetchGameDetail(gameId);
@@ -380,8 +285,12 @@ export default function GamesPage() {
         }));
       } catch (e) {
         console.error("Lỗi fetch game detail:", e);
-        // nếu lỗi, dừng game
         setIsPlaying(false);
+        toast({
+          title: "Lỗi",
+          description: "Không thể tải câu hỏi cho game này",
+          variant: "destructive",
+        });
       }
     }
   };
@@ -396,9 +305,8 @@ export default function GamesPage() {
   };
 
   const handleAnswer = (answerIndex?: number) => {
-    if (!selectedGame) return;
-
-    if (answeredRef.current) return;
+    let result = false;
+    if (!selectedGame || answeredRef.current) return;
     answeredRef.current = true;
 
     const qs = getCurrentQuestions();
@@ -408,52 +316,49 @@ export default function GamesPage() {
     let isCorrect = false;
 
     switch (question.type) {
-      case "multiple-choice": {
+      case "multiple-choice":
         setSelectedAnswer(answerIndex!);
-        const option = question.options[answerIndex!];
-        isCorrect = option?.is_correct === true;
+        // Tìm index của option có is_correct = true
+        const correctIndex = question.options.findIndex(
+          (opt) => opt.is_correct
+        );
+        isCorrect = answerIndex === correctIndex;
         break;
-      }
       case "fill-blank":
-        isCorrect = userInput.trim() === (question as any).blank;
+        isCorrect = userInput.trim() === question.blank;
         break;
       case "matching":
-        isCorrect =
-          selectedPairs.filter((v) => v !== undefined).length ===
-            question.matching_pairs.length &&
-          selectedPairs.every((vietIndex, chineseIndex) => {
-            const chineseItem = question.matching_pairs[chineseIndex];
-            const vietnameseItem = question.matching_pairs[vietIndex];
-            return (
-              chineseItem &&
-              vietnameseItem &&
-              chineseItem.pair_index === vietnameseItem.pair_index
-            );
-          });
+        isCorrect = selectedPairs.every((vietIndex, chineseIndex) => {
+          // Lấy pair đúng theo chineseIndex
+          const correctVietnamese =
+            question.matching_pairs[chineseIndex].vietnamese_text;
+          const chosenVietnamese =
+            question.matching_pairs[vietIndex].vietnamese_text;
+          return correctVietnamese === chosenVietnamese;
+        });
         break;
       case "word-order":
-        const correctOrder = (question.word_order || [])
-          .sort((a, b) => a.position - b.position)
-          .map((item) => item.word);
+        const correctOrder = (question.word_order ?? [])
+          .sort((a, b) => a.position - b.position) // sắp xếp theo position
+          .map((w) => w.word); // chỉ lấy text
 
-        isCorrect =
-          wordOrder.length === correctOrder.length &&
-          wordOrder.every((word, index) => word === correctOrder[index]);
-
+        isCorrect = wordOrder.join(" ") === correctOrder.join(" ");
         break;
+
       case "grammar-fix":
         isCorrect =
-          correctedSentence.trim() === (question as any).correctSentence;
+          correctedSentence.trim() === (question.correctSentence ?? "").trim();
         break;
     }
-
+    setIsCorrect(isCorrect);
+    setShowResult(true);
     if (isCorrect) setScore((s) => s + 5);
 
     setTimeout(() => {
       if (currentQuestion < qs.length - 1) {
         setCurrentQuestion((i) => i + 1);
-        const limit = games.find((g) => g.id === selectedGame)?.timeLimit || 10;
-        setTimeLeft(limit);
+        const game = gamesList.find((g) => g.id === selectedGame);
+        setTimeLeft(game?.timeLimit || 10);
         resetAnswerStates();
       } else {
         setGameFinished(true);
@@ -469,14 +374,24 @@ export default function GamesPage() {
 
     if (currentQuestion < qs.length - 1) {
       setCurrentQuestion((i) => i + 1);
-      const limit = games.find((g) => g.id === selectedGame)?.timeLimit || 10;
-      setTimeLeft(limit);
+      const game = gamesList.find((g) => g.id === selectedGame);
+      setTimeLeft(game?.timeLimit || 10);
       resetAnswerStates();
     } else {
       setGameFinished(true);
       setIsPlaying(false);
     }
   };
+
+  useEffect(() => {
+    let timer: NodeJS.Timeout;
+    if (isPlaying && timeLeft > 0 && !gameFinished) {
+      timer = setTimeout(() => setTimeLeft(timeLeft - 1), 1000);
+    } else if (timeLeft === 0 && isPlaying) {
+      handleTimeUp();
+    }
+    return () => clearTimeout(timer);
+  }, [timeLeft, isPlaying, gameFinished]);
 
   const resetGame = () => {
     setSelectedGame(null);
@@ -497,13 +412,21 @@ export default function GamesPage() {
     setSelectedPairs(newPairs);
   };
 
-  const handleWordClick = (word: string, index: number) => {
+  const handleWordClick = (word: string) => {
     if (wordOrder.includes(word)) {
       setWordOrder(wordOrder.filter((w) => w !== word));
     } else {
       setWordOrder([...wordOrder, word]);
     }
   };
+
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-8 max-w-6xl text-center">
+        <p className="text-gray-600">Đang tải danh sách game...</p>
+      </div>
+    );
+  }
 
   if (selectedGame && isPlaying) {
     const questions = gameQuestions[selectedGame] || [];
@@ -547,7 +470,7 @@ export default function GamesPage() {
                 Câu {currentQuestion + 1}/{questions.length}
               </CardTitle>
               <CardDescription className="text-lg">
-                {question.questionText}
+                {question.question}
               </CardDescription>
             </CardHeader>
             <CardContent>
@@ -560,17 +483,14 @@ export default function GamesPage() {
                         selectedAnswer === null
                           ? "outline"
                           : selectedAnswer === index
-                          ? index ===
-                            (question as any).options.findIndex(
-                              (o) => o.is_correct
-                            )
+                          ? option.is_correct
                             ? "default"
                             : "destructive"
-                          : (question as any).options[index].is_correct
+                          : option.is_correct
                           ? "default"
                           : "outline"
                       }
-                      className={`p-4 h-auto text-left justify-start`}
+                      className="p-4 h-auto text-left justify-start"
                       onClick={() => {
                         if (!answeredRef.current) handleAnswer(index);
                       }}
@@ -579,7 +499,8 @@ export default function GamesPage() {
                       <span className="font-medium mr-3">
                         {String.fromCharCode(65 + index)}.
                       </span>
-                      {option.option_text}
+                      {option.option_text}{" "}
+                      {/* Sửa ở đây: hiển thị option_text thay vì object */}
                     </Button>
                   ))}
                 </div>
@@ -604,9 +525,9 @@ export default function GamesPage() {
                     <Button onClick={() => handleAnswer()}>Xác nhận</Button>
                   </div>
                   <div className="grid grid-cols-2 gap-2">
-                    {question.options.map((option, index) => (
+                    {question.options.map((option: any, index) => (
                       <Button
-                        key={index}
+                        key={option.id ?? index}
                         variant="outline"
                         onClick={() => setUserInput(option.option_text)}
                         className="text-sm"
@@ -626,8 +547,8 @@ export default function GamesPage() {
                       <h4 className="font-semibold">Tiếng Trung</h4>
                       {question.matching_pairs.map((pair, index) => (
                         <div
-                          key={index}
-                          onClick={() => setActiveChinese(index)} // chọn Chinese
+                          key={pair.id}
+                          onClick={() => setActiveChinese(index)}
                           className={`p-3 border rounded-lg cursor-pointer ${
                             selectedPairs[index] !== undefined
                               ? "bg-emerald-50 border-emerald-300"
@@ -653,21 +574,18 @@ export default function GamesPage() {
                     {/* Cột Tiếng Việt */}
                     <div className="space-y-2">
                       <h4 className="font-semibold">Tiếng Việt</h4>
-                      {question.matching_pairs.map((pair, index) => (
+                      {question.matching_pairs.map((pair, viIndex) => (
                         <Button
-                          key={index}
+                          key={pair.id}
                           variant="outline"
                           className="w-full justify-start h-auto p-3 bg-transparent"
                           onClick={() => {
-                            if (
-                              activeChinese !== null &&
-                              selectedPairs[activeChinese] === undefined
-                            ) {
-                              handlePairSelection(activeChinese, index);
-                              setActiveChinese(null); // reset sau khi ghép xong
+                            if (activeChinese !== null) {
+                              handlePairSelection(activeChinese, viIndex);
+                              setActiveChinese(null);
                             }
                           }}
-                          disabled={selectedPairs.includes(index)}
+                          disabled={selectedPairs.includes(viIndex)}
                         >
                           {pair.vietnamese_text}
                         </Button>
@@ -675,12 +593,10 @@ export default function GamesPage() {
                     </div>
                   </div>
 
-                  {/* Nút xác nhận */}
                   <Button
                     onClick={() => handleAnswer()}
                     disabled={
-                      selectedPairs.filter((v) => v !== undefined).length !==
-                      question.matching_pairs.length
+                      selectedPairs.length !== question.matching_pairs.length
                     }
                     className="w-full"
                   >
@@ -710,25 +626,27 @@ export default function GamesPage() {
                       ))}
                     </div>
                   </div>
+
                   <div className="flex flex-wrap gap-2">
-                    {(question.word_order || []).map((item, index) => (
+                    {(question.word_order ?? []).map((w, index) => (
                       <Button
-                        key={item.id}
+                        key={w.id ?? index}
                         variant={
-                          wordOrder.includes(item.word)
-                            ? "secondary"
-                            : "outline"
+                          wordOrder.includes(w.word) ? "secondary" : "outline"
                         }
-                        onClick={() => handleWordClick(item.word, index)}
-                        disabled={wordOrder.includes(item.word)}
+                        onClick={() => handleWordClick(w.word)}
+                        disabled={wordOrder.includes(w.word)}
                       >
-                        {item.word}
+                        {w.word}
                       </Button>
                     ))}
                   </div>
+
                   <Button
                     onClick={() => handleAnswer()}
-                    disabled={wordOrder.length !== question.word_order.length}
+                    disabled={
+                      wordOrder.length !== (question.word_order?.length ?? 0)
+                    }
                     className="w-full"
                   >
                     Xác nhận thứ tự
@@ -752,6 +670,23 @@ export default function GamesPage() {
                       className="flex-1"
                       onKeyPress={(e) => e.key === "Enter" && handleAnswer()}
                     />
+                    {showResult && isCorrect === false && (
+                      <p className="text-sm text-red-600 mt-2">
+                        ❌ Sai rồi. Đáp án đúng:{" "}
+                        <span className="font-mono">
+                          {question.correctSentence}
+                        </span>
+                        <br />
+                        Giải thích: {question.explanation}
+                      </p>
+                    )}
+
+                    {showResult && isCorrect === true && (
+                      <p className="text-sm text-green-600 mt-2">
+                        ✅ Chính xác!
+                      </p>
+                    )}
+
                     <Button onClick={() => handleAnswer()}>Xác nhận</Button>
                   </div>
                 </div>
@@ -777,7 +712,7 @@ export default function GamesPage() {
               <CardTitle className="text-3xl">Hoàn thành!</CardTitle>
               <CardDescription>
                 Bạn đã hoàn thành trò chơi{" "}
-                {games.find((g) => g.id === selectedGame)?.title}
+                {gamesList.find((g) => g.id === selectedGame)?.title}
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-6">
@@ -795,9 +730,7 @@ export default function GamesPage() {
               </div>
 
               <div className="flex gap-3">
-                <Button
-                  onClick={async () => await startGame(selectedGame as number)}
-                >
+                <Button onClick={() => startGame(selectedGame as number)}>
                   Chơi lại
                 </Button>
                 <Button
@@ -824,7 +757,7 @@ export default function GamesPage() {
         </p>
       </div>
 
-      {/* Daily Challenge */}
+      {/* Daily Challenge
       <Card className="mb-8 bg-gradient-to-r from-purple-50 to-pink-50 border-purple-200">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -850,11 +783,11 @@ export default function GamesPage() {
             </div>
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Games Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
-        {games.map((game) => {
+        {gamesList.map((game) => {
           const Icon = game.icon;
           return (
             <Card key={game.id} className="hover:shadow-lg transition-shadow">
@@ -905,7 +838,7 @@ export default function GamesPage() {
         })}
       </div>
 
-      {/* Recent Scores */}
+      {/* Recent Scores
       <Card>
         <CardHeader>
           <CardTitle>Điểm số gần đây</CardTitle>
@@ -944,7 +877,7 @@ export default function GamesPage() {
             ))}
           </div>
         </CardContent>
-      </Card>
+      </Card> */}
     </div>
   );
 }

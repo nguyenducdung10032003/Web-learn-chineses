@@ -70,27 +70,66 @@ export default function AITutorPage() {
   }, [messages])
 
   const handleSendMessage = async () => {
-    if (!inputMessage.trim()) return
+  if (!inputMessage.trim()) return;
 
-    const userMessage: Message = {
+  const userMessage: Message = {
+    id: Date.now().toString(),
+    content: inputMessage,
+    sender: "user",
+    timestamp: new Date(),
+    type: "text",
+  };
+
+  setMessages((prev) => [...prev, userMessage]);
+  setInputMessage("");
+  setIsTyping(true);
+
+  try {
+    const res = await fetch("https://api.openai.com/v1/chat/completions", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer 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`,
+      },
+      body: JSON.stringify({
+        model: "gpt-4o-mini", // hoặc "gpt-3.5-turbo" nếu rẻ hơn
+        messages: [
+          { role: "system", content: "Bạn là trợ lý ngữ pháp tiếng Trung. Hãy sửa lỗi, giải thích, đưa ví dụ." },
+          { role: "user", content: inputMessage },
+        ],
+        temperature: 0.7,
+      }),
+    });
+
+    const data = await res.json();
+    const answer = data.choices?.[0]?.message?.content || "⚠️ Không nhận được phản hồi từ AI";
+
+    const aiMessage: Message = {
       id: Date.now().toString(),
-      content: inputMessage,
-      sender: "user",
+      content: answer,
+      sender: "ai",
       timestamp: new Date(),
-      type: "text",
-    }
+      type: "explanation",
+    };
 
-    setMessages((prev) => [...prev, userMessage])
-    setInputMessage("")
-    setIsTyping(true)
-
-    // Simulate AI response
-    setTimeout(() => {
-      const response = generateAIResponse(inputMessage)
-      setMessages((prev) => [...prev, response])
-      setIsTyping(false)
-    }, 1500)
+    setMessages((prev) => [...prev, aiMessage]);
+  } catch (error) {
+    console.error("Error calling OpenAI:", error);
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: Date.now().toString(),
+        content: "⚠️ Lỗi khi kết nối tới AI. Vui lòng thử lại.",
+        sender: "ai",
+        timestamp: new Date(),
+        type: "text",
+      },
+    ]);
+  } finally {
+    setIsTyping(false);
   }
+};
+
 
   const generateAIResponse = (question: string): Message => {
     // Check if it's a predefined question

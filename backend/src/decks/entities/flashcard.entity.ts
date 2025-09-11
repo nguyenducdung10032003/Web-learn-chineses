@@ -17,6 +17,9 @@ export class Flashcard {
   @JoinColumn({ name: 'deck_id' })
   deck: Deck;
 
+  @Column({ name: 'deck_id' })
+  deckId: number
+  
   @Column({ type: 'varchar', length: 100 })
   chinese: string;
 
