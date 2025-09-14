@@ -28,10 +28,10 @@ export class UsersController {
     return this.usersService.findAll();
   }
 
-  @Get(':id')
-  findOne(@Param('id') id: string) {
-    return this.usersService.findOne(+id);
-  }
+  // @Get(':id')
+  // findOne(@Param('id') id: string) {
+  //   return this.usersService.findOne(+id);
+  // }
 
   @Patch(':id')
   update(@Param('id') id: string, @Body() updateUserDto: UpdateUserDto) {
@@ -73,5 +73,15 @@ export class UsersController {
     }
 
     return this.usersService.recordGamePlay(userId, +id, body);
+  }
+
+  @Get('stats')
+  async getUserStats() {
+    return this.usersService.getStats();
+  }
+
+  @Get('recent')
+  async getRecentUsers() {
+    return this.usersService.findRecentUsers();
   }
 }

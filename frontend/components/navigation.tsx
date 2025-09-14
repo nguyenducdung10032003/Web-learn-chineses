@@ -37,6 +37,7 @@ import {
   User,
   LogOut,
   Settings,
+  Shield,
 } from "lucide-react";
 
 const coreItems = [
@@ -111,67 +112,68 @@ export function Navigation() {
             {coreItems.map((item) => (
               <NavLink key={item.href} {...item} />
             ))}
-{user && (
-  <>
-    {/* Nhóm thành tích (DropdownMenu shadcn) */}
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center gap-1">
-          <Trophy className="h-4 w-4 mr-1" /> Thành tích{" "}
-          <ChevronDown className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        sideOffset={8}
-        className="w-56 p-1"
-      >
-        {achievementItems.map((item) => (
-          <DropdownMenuItem key={item.href} asChild>
-            <Link
-              href={item.href}
-              className="flex items-center gap-3 w-full"
-            >
-              <item.icon className="h-4 w-4" />
-              <span>{item.label}</span>
-              {item.badge && (
-                <Badge className="ml-auto text-xs">{item.badge}</Badge>
-              )}
-            </Link>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
+            {user && (
+              <>
+                {/* Nhóm thành tích (DropdownMenu shadcn) */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-1">
+                      <Trophy className="h-4 w-4 mr-1" /> Thành tích{" "}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    sideOffset={8}
+                    className="w-56 p-1"
+                  >
+                    {achievementItems.map((item) => (
+                      <DropdownMenuItem key={item.href} asChild>
+                        <Link
+                          href={item.href}
+                          className="flex items-center gap-3 w-full"
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                          {item.badge && (
+                            <Badge className="ml-auto text-xs">
+                              {item.badge}
+                            </Badge>
+                          )}
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
 
-    {/* Nhóm xã hội (DropdownMenu shadcn) */}
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button variant="ghost" className="flex items-center gap-1">
-          <Users className="h-4 w-4 mr-1" /> Cộng đồng{" "}
-          <ChevronDown className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent
-        align="start"
-        sideOffset={8}
-        className="w-56 p-1"
-      >
-        {socialItems.map((item) => (
-          <DropdownMenuItem key={item.href} asChild>
-            <Link
-              href={item.href}
-              className="flex items-center gap-3 w-full"
-            >
-              <item.icon className="h-4 w-4" />
-              <span>{item.label}</span>
-            </Link>
-          </DropdownMenuItem>
-        ))}
-      </DropdownMenuContent>
-    </DropdownMenu>
-  </>
-)}
-
+                {/* Nhóm xã hội (DropdownMenu shadcn) */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button variant="ghost" className="flex items-center gap-1">
+                      <Users className="h-4 w-4 mr-1" /> Cộng đồng{" "}
+                      <ChevronDown className="h-4 w-4" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align="start"
+                    sideOffset={8}
+                    className="w-56 p-1"
+                  >
+                    {socialItems.map((item) => (
+                      <DropdownMenuItem key={item.href} asChild>
+                        <Link
+                          href={item.href}
+                          className="flex items-center gap-3 w-full"
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span>{item.label}</span>
+                        </Link>
+                      </DropdownMenuItem>
+                    ))}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </>
+            )}
           </div>
 
           {/* User Menu */}

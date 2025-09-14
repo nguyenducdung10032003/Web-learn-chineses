@@ -1,20 +1,31 @@
-"use client"
+"use client";
 
-import { useState, useRef, useEffect } from "react"
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Badge } from "@/components/ui/badge"
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { ScrollArea } from "@/components/ui/scroll-area"
-import { Bot, Send, Lightbulb, BookOpen, MessageSquare, Sparkles, User, Copy, ThumbsUp, ThumbsDown } from "lucide-react"
+import { useState, useRef, useEffect } from "react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  Bot,
+  Send,
+  Lightbulb,
+  BookOpen,
+  MessageSquare,
+  Sparkles,
+  User,
+  Copy,
+  ThumbsUp,
+  ThumbsDown,
+} from "lucide-react";
 
 interface Message {
-  id: string
-  content: string
-  sender: "user" | "ai"
-  timestamp: Date
-  type?: "text" | "example" | "explanation"
+  id: string;
+  content: string;
+  sender: "user" | "ai";
+  timestamp: Date;
+  type?: "text" | "example" | "explanation";
 }
 
 const quickQuestions = [
@@ -24,7 +35,7 @@ const quickQuestions = [
   "Cấu trúc câu cơ bản?",
   "Cách hỏi thời gian?",
   "Số đếm trong tiếng Trung?",
-]
+];
 
 const exampleResponses = {
   "Cách sử dụng 的, 得, 地?": {
@@ -45,7 +56,7 @@ const exampleResponses = {
       "我正在吃饭 (wǒ zhèngzài chī fàn) - tôi đang ăn cơm (ngay bây giờ)",
     ],
   },
-}
+};
 
 export default function AITutorPage() {
   const [messages, setMessages] = useState<Message[]>([
@@ -57,95 +68,100 @@ export default function AITutorPage() {
       timestamp: new Date(),
       type: "text",
     },
-  ])
-  const [inputMessage, setInputMessage] = useState("")
-  const [isTyping, setIsTyping] = useState(false)
-  const scrollAreaRef = useRef<HTMLDivElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
+  ]);
+  const [inputMessage, setInputMessage] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
+  const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     if (scrollAreaRef.current) {
-      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight
+      scrollAreaRef.current.scrollTop = scrollAreaRef.current.scrollHeight;
     }
-  }, [messages])
+  }, [messages]);
 
   const handleSendMessage = async () => {
-  if (!inputMessage.trim()) return;
+    if (!inputMessage.trim()) return;
 
-  const userMessage: Message = {
-    id: Date.now().toString(),
-    content: inputMessage,
-    sender: "user",
-    timestamp: new Date(),
-    type: "text",
-  };
-
-  setMessages((prev) => [...prev, userMessage]);
-  setInputMessage("");
-  setIsTyping(true);
-
-  try {
-    const res = await fetch("https://api.openai.com/v1/chat/completions", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer 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`,
-      },
-      body: JSON.stringify({
-        model: "gpt-4o-mini", // hoặc "gpt-3.5-turbo" nếu rẻ hơn
-        messages: [
-          { role: "system", content: "Bạn là trợ lý ngữ pháp tiếng Trung. Hãy sửa lỗi, giải thích, đưa ví dụ." },
-          { role: "user", content: inputMessage },
-        ],
-        temperature: 0.7,
-      }),
-    });
-
-    const data = await res.json();
-    const answer = data.choices?.[0]?.message?.content || "⚠️ Không nhận được phản hồi từ AI";
-
-    const aiMessage: Message = {
+    const userMessage: Message = {
       id: Date.now().toString(),
-      content: answer,
-      sender: "ai",
+      content: inputMessage,
+      sender: "user",
       timestamp: new Date(),
-      type: "explanation",
+      type: "text",
     };
 
-    setMessages((prev) => [...prev, aiMessage]);
-  } catch (error) {
-    console.error("Error calling OpenAI:", error);
-    setMessages((prev) => [
-      ...prev,
-      {
-        id: Date.now().toString(),
-        content: "⚠️ Lỗi khi kết nối tới AI. Vui lòng thử lại.",
-        sender: "ai",
-        timestamp: new Date(),
-        type: "text",
-      },
-    ]);
-  } finally {
-    setIsTyping(false);
+    setMessages((prev) => [...prev, userMessage]);
+    setInputMessage("");
+    setIsTyping(true);
+
+    try {
+  const res = await fetch("https://api.groq.com/openai/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer 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`, 
+    },
+    body: JSON.stringify({
+      model: "llama-3.1-8b-instant",
+      messages: [
+        { role: "system", content: "Bạn là trợ lý ngữ pháp tiếng Trung. Hãy sửa lỗi, giải thích, đưa ví dụ." },
+        { role: "user", content: inputMessage },
+      ],
+      temperature: 0.7,
+    }),
+  });
+
+  const data = await res.json();
+  const answer = data.choices?.[0]?.message?.content || "⚠️ Không nhận được phản hồi từ AI";
+
+  const aiMessage: Message = {
+    id: Date.now().toString(),
+    content: answer,
+    sender: "ai",
+    timestamp: new Date(),
+    type: "explanation",
+  };
+
+  setMessages((prev) => [...prev, aiMessage]);
+} catch (error) {
+  console.error("Error calling Groq:", error);
+  setMessages((prev) => [
+    ...prev,
+    {
+      id: Date.now().toString(),
+      content: "⚠️ Lỗi khi kết nối tới AI. Vui lòng thử lại.",
+      sender: "ai",
+      timestamp: new Date(),
+      type: "text",
+    },
+  ]);
+} finally {
+  setIsTyping(false);
+}
   }
-};
 
 
   const generateAIResponse = (question: string): Message => {
     // Check if it's a predefined question
     const matchedQuestion = Object.keys(exampleResponses).find(
-      (q) => question.toLowerCase().includes(q.toLowerCase()) || q.toLowerCase().includes(question.toLowerCase()),
-    )
+      (q) =>
+        question.toLowerCase().includes(q.toLowerCase()) ||
+        q.toLowerCase().includes(question.toLowerCase())
+    );
 
     if (matchedQuestion) {
-      const response = exampleResponses[matchedQuestion as keyof typeof exampleResponses]
+      const response =
+        exampleResponses[matchedQuestion as keyof typeof exampleResponses];
       return {
         id: Date.now().toString(),
-        content: `${response.explanation}\n\n**Ví dụ:**\n${response.examples.map((ex, i) => `${i + 1}. ${ex}`).join("\n")}`,
+        content: `${response.explanation}\n\n**Ví dụ:**\n${response.examples
+          .map((ex, i) => `${i + 1}. ${ex}`)
+          .join("\n")}`,
         sender: "ai",
         timestamp: new Date(),
         type: "explanation",
-      }
+      };
     }
 
     // Default response for other questions
@@ -156,17 +172,17 @@ export default function AITutorPage() {
       sender: "ai",
       timestamp: new Date(),
       type: "text",
-    }
-  }
+    };
+  };
 
   const handleQuickQuestion = (question: string) => {
-    setInputMessage(question)
-    inputRef.current?.focus()
-  }
+    setInputMessage(question);
+    inputRef.current?.focus();
+  };
 
   const copyMessage = (content: string) => {
-    navigator.clipboard.writeText(content)
-  }
+    navigator.clipboard.writeText(content);
+  };
 
   const formatMessage = (content: string) => {
     // Simple formatting for bold text
@@ -180,14 +196,16 @@ export default function AITutorPage() {
             line
           )}
         </div>
-      ))
-  }
+      ));
+  };
 
   return (
     <div className="container mx-auto px-4 py-8 max-w-4xl">
       <div className="mb-8">
         <h1 className="text-3xl font-bold text-gray-900 mb-2">Trợ lý AI</h1>
-        <p className="text-gray-600">Hỏi đáp ngữ pháp tiếng Trung với trợ lý AI thông minh</p>
+        <p className="text-gray-600">
+          Hỏi đáp ngữ pháp tiếng Trung với trợ lý AI thông minh
+        </p>
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
@@ -251,10 +269,16 @@ export default function AITutorPage() {
                   </AvatarFallback>
                 </Avatar>
                 <div>
-                  <CardTitle className="text-lg">Trợ lý AI ChineseMaster</CardTitle>
-                  <p className="text-sm text-gray-600">Chuyên gia ngữ pháp tiếng Trung</p>
+                  <CardTitle className="text-lg">
+                    Trợ lý AI ChineseMaster
+                  </CardTitle>
+                  <p className="text-sm text-gray-600">
+                    Chuyên gia ngữ pháp tiếng Trung
+                  </p>
                 </div>
-                <Badge className="ml-auto bg-emerald-100 text-emerald-700">Trực tuyến</Badge>
+                <Badge className="ml-auto bg-emerald-100 text-emerald-700">
+                  Trực tuyến
+                </Badge>
               </div>
             </CardHeader>
 
@@ -264,7 +288,11 @@ export default function AITutorPage() {
                 {messages.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex gap-3 ${message.sender === "user" ? "justify-end" : "justify-start"}`}
+                    className={`flex gap-3 ${
+                      message.sender === "user"
+                        ? "justify-end"
+                        : "justify-start"
+                    }`}
                   >
                     {message.sender === "ai" && (
                       <Avatar className="h-8 w-8">
@@ -279,11 +307,13 @@ export default function AITutorPage() {
                         message.sender === "user"
                           ? "bg-emerald-500 text-white"
                           : message.type === "explanation"
-                            ? "bg-blue-50 border border-blue-200"
-                            : "bg-gray-100"
+                          ? "bg-blue-50 border border-blue-200"
+                          : "bg-gray-100"
                       }`}
                     >
-                      <div className="text-sm whitespace-pre-wrap">{formatMessage(message.content)}</div>
+                      <div className="text-sm whitespace-pre-wrap">
+                        {formatMessage(message.content)}
+                      </div>
 
                       {message.sender === "ai" && (
                         <div className="flex items-center gap-2 mt-2 pt-2 border-t border-gray-200">
@@ -296,10 +326,18 @@ export default function AITutorPage() {
                             <Copy className="h-3 w-3 mr-1" />
                             Sao chép
                           </Button>
-                          <Button size="sm" variant="ghost" className="h-6 px-2 text-xs">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 px-2 text-xs"
+                          >
                             <ThumbsUp className="h-3 w-3" />
                           </Button>
-                          <Button size="sm" variant="ghost" className="h-6 px-2 text-xs">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 px-2 text-xs"
+                          >
                             <ThumbsDown className="h-3 w-3" />
                           </Button>
                         </div>
@@ -352,12 +390,16 @@ export default function AITutorPage() {
                   onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
                   className="flex-1"
                 />
-                <Button onClick={handleSendMessage} disabled={!inputMessage.trim() || isTyping}>
+                <Button
+                  onClick={handleSendMessage}
+                  disabled={!inputMessage.trim() || isTyping}
+                >
                   <Send className="h-4 w-4" />
                 </Button>
               </div>
               <p className="text-xs text-gray-500 mt-2">
-                Nhấn Enter để gửi. AI có thể mắc lỗi, hãy kiểm tra thông tin quan trọng.
+                Nhấn Enter để gửi. AI có thể mắc lỗi, hãy kiểm tra thông tin
+                quan trọng.
               </p>
             </div>
           </Card>
@@ -377,21 +419,27 @@ export default function AITutorPage() {
             <div className="text-center p-4 bg-white rounded-lg">
               <BookOpen className="h-8 w-8 text-blue-500 mx-auto mb-2" />
               <h3 className="font-semibold mb-1">Giải thích ngữ pháp</h3>
-              <p className="text-sm text-gray-600">Phân tích cấu trúc câu, cách sử dụng từ loại</p>
+              <p className="text-sm text-gray-600">
+                Phân tích cấu trúc câu, cách sử dụng từ loại
+              </p>
             </div>
             <div className="text-center p-4 bg-white rounded-lg">
               <MessageSquare className="h-8 w-8 text-emerald-500 mx-auto mb-2" />
               <h3 className="font-semibold mb-1">Ví dụ thực tế</h3>
-              <p className="text-sm text-gray-600">Cung cấp câu ví dụ với phiên âm và dịch nghĩa</p>
+              <p className="text-sm text-gray-600">
+                Cung cấp câu ví dụ với phiên âm và dịch nghĩa
+              </p>
             </div>
             <div className="text-center p-4 bg-white rounded-lg">
               <Lightbulb className="h-8 w-8 text-yellow-500 mx-auto mb-2" />
               <h3 className="font-semibold mb-1">Mẹo học tập</h3>
-              <p className="text-sm text-gray-600">Gợi ý phương pháp học và ghi nhớ hiệu quả</p>
+              <p className="text-sm text-gray-600">
+                Gợi ý phương pháp học và ghi nhớ hiệu quả
+              </p>
             </div>
           </div>
         </CardContent>
       </Card>
     </div>
-  )
+  );
 }

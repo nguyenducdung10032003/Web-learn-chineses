@@ -32,9 +32,9 @@ export class UsersService {
     return this.userRepository.find();
   }
 
-  findOne(id: number) {
-    return `This action returns a #${id} user`;
-  }
+  // findOne(id: number) {
+  //   return `This action returns a #${id} user`;
+  // }
 
   update(id: number, updateUserDto: UpdateUserDto) {
     return `This action updates a #${id} user`;
@@ -167,5 +167,50 @@ export class UsersService {
     }
 
     return { message: 'Game play recorded', stats };
+  }
+
+  async getStats() {
+    const totalUsers = await this.userRepository.count();
+    const activeUsers = await this.userRepository.count({ where: { status: 'active' } });
+    const bannedUsers = await this.userRepository.count({ where: { status: 'banned' } });
+    const inactiveUsers = await this.userRepository.count({ where: { status: 'inactive' } });
+
+    const totalXP = await this.userRepository
+      .createQueryBuilder('u')
+      .select('SUM(u.xp)', 'sum')
+      .getRawOne();
+
+    const avgLevel = await this.userRepository
+      .createQueryBuilder('u')
+      .select('AVG(u.level)', 'avg')
+      .getRawOne();
+
+    const totalLessons = await this.userRepository
+      .createQueryBuilder('u')
+      .select('SUM(u.total_lessons)', 'sum')
+      .getRawOne();
+
+    const completedLessons = await this.userRepository
+      .createQueryBuilder('u')
+      .select('SUM(u.completed_lessons)', 'sum')
+      .getRawOne();
+
+    return {
+      totalUsers,
+      activeUsers,
+      bannedUsers,
+      inactiveUsers,
+      totalXP: Number(totalXP.sum) || 0,
+      averageLevel: Number(avgLevel.avg) || 0,
+      totalLessons: Number(totalLessons.sum) || 0,
+      completedLessons: Number(completedLessons.sum) || 0,
+    };
+  }
+
+  async findRecentUsers(limit = 5) {
+    return this.userRepository.find({
+      order: { createdAt: 'DESC' },
+      take: limit,
+    });
   }
 }
